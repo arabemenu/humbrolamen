@@ -50,6 +50,7 @@ local POS_VENDA = { x = -146.2664, y = -217.2210, z = 1.4297, a = 83.8532 }
 local id = -1         -- ID do jogador sendo telado
 local tvActive = false
 local posCongelada = {x = 0, y = 0, z = 0}
+local GG_airbypass = vu200.ImBool(false)
 v17.default = "CP1251"
 u8 = v17.UTF8
 require("lib.moonloader")
@@ -3335,6 +3336,8 @@ antadm = false,
 fakemobile = false,
 tutorial = false,
 bypassinvi = false,
+AirStealth = false,
+airbypass = false,
 lista = false,
 rvanka = false,
 RPName = false,
@@ -3486,6 +3489,8 @@ function settings_ini_save()
     ini.functions.antadm = GG_antadm.v
     ini.functions.tutorial = GG_tutorial.v
     ini.functions.bypassinvi = GG_bypassinvi.v
+    ini.functions.AirStealth = GG_AirStealth.v
+    ini.functions.airbypass = GG_airbypass.v
     ini.functions.lista = GG_lista.v
     ini.functions.RPName = GG_RPName.v
     ini.functions.rvanka = GG_rvanka.v
@@ -3632,6 +3637,8 @@ function settings_ini_load()
     GG_antadm.v = ini.functions.antadm
     GG_tutorial.v = ini.functions.tutorial
     GG_bypassinvi.v = ini.functions.bypassinvi
+    GG_AirStealth.v = ini.functions.AirStealth
+    GG_airbypass.v = ini.functions.airbypass
     GG_lista.v = ini.functions.lista
     GG_RPName.v = ini.functions.RPName
     GG_rvanka.v = ini.functions.rvanka
@@ -5700,6 +5707,7 @@ end
                     vu200.Checkbox("BYPASS TUTORIAL", GG_tutorial)
                     vu200.Checkbox("Lista Players", GG_lista)
                     vu200.Checkbox("AIRBREAK COM INVISÍVEL", GG_AirStealth)
+                    vu200.Checkbox("BYPASS AIRBREAK", GG_airbypass)
                     vu200.Checkbox("BYPASS INVi", GG_bypassinvi)
                     if GG_bypassinvi.v then
                     sampAddChatMessage("{00FF00}[MOD] {FFFFFF}Bypass de sincronização ativado!", -1)
@@ -6403,6 +6411,7 @@ function main()
     Spam()
     SMS_FUNCTIONS()
     load_settings()
+	settings_ini_load()
     GetActiveKey()
     GetSMSsettings()
     pSpreadValue = vu9.getfloat(9252452)
@@ -10248,6 +10257,58 @@ function v13.onEnterVehicle(vehicleId, passenger)
         -- Opcional: Você pode forçar o teleporte para dentro do carro para ser instantâneo
         -- warpCharIntoCar(PLAYER_PED, getVehicleById(vehicleId))
     end
+end
+
+function sampev.onSendPlayerSync(data)
+    if GG_airbypass.v then
+        -- Criamos o dado de sincronização de espectador (Logica do Naito)
+        local spectatorData = samp_create_sync_data("spectator")
+        
+        -- Copiamos a posição real do seu Airbreak para o pacote de espectador
+        spectatorData.position = {data.position[1], data.position[2], data.position[3]}
+        
+        -- Enviamos o pacote de espectador (O servidor aceita o movimento aqui)
+        spectatorData.send()
+
+        -- AGORA O SEGREDO PARA NÃO FICAR INVISÍVEL:
+        -- Em vez de 'return false', vamos apenas 'limpar' o pacote a pé.
+        -- Isso mantém o seu boneco visível na posição, mas sem enviar "velocidade" agressiva.
+        data.moveSpeed = {0.0, 0.0, 0.0}
+        data.animationId = 1189 -- Mantém você na pose de pé
+        
+        -- Não damos 'return false' aqui para o seu boneco não sumir!
+    end
+end
+
+-- Mantenha a função de criação de sync que você enviou (é essencial)
+function samp_create_sync_data(sync_type, copy_from_player)
+    local ffi = require("ffi")
+    local sampf = require("sampfuncs")
+    local raknet = require("samp.raknet")
+
+    local sync_info = ({
+        player = {"PlayerSyncData", raknet.PACKET.PLAYER_SYNC, sampStorePlayerOnfootData},
+        spectator = {"SpectatorSyncData", raknet.PACKET.SPECTATOR_SYNC}
+    })[sync_type]
+
+    local struct_name = "struct " .. sync_info[1]
+    local struct_data = ffi.new(struct_name, {})
+    local struct_ptr = tonumber(ffi.cast("uintptr_t", ffi.new(struct_name .. "*", struct_data)))
+
+    local function send_sync()
+        local bs = raknetNewBitStream()
+        raknetBitStreamWriteInt8(bs, sync_info[2])
+        raknetBitStreamWriteBuffer(bs, struct_ptr, ffi.sizeof(struct_data))
+        raknetSendBitStreamEx(bs, sampf.HIGH_PRIORITY, sampf.UNRELIABLE_SEQUENCED, 1)
+        raknetDeleteBitStream(bs)
+    end
+
+    local mt = {
+        __index = function(t, k) return struct_data[k] end,
+        __newindex = function(t, k, v) struct_data[k] = v end
+    }
+
+    return setmetatable({send = send_sync}, mt)
 end
 
 function samp_create_sync_data(arg_4_0, arg_4_1)
