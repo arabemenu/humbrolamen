@@ -53,6 +53,11 @@ local posCongelada = {x = 0, y = 0, z = 0}
 local GG_airbypass = vu200.ImBool(false)
 local GG_ChecarDroides = vu200.ImBool(false)
 local players_device = {}
+local GG_SpeedHackBypass = vu200.ImBool(false)
+local GG_AirVehBypass = vu200.ImBool(false)
+local actualSpeed = -1
+local distAB = 0
+local oldX, oldY, oldZ = 0, 0, 0
 local font_device = renderCreateFont('Arial', 8, 10)
 v17.default = "CP1251"
 u8 = v17.UTF8
@@ -60,6 +65,7 @@ require("lib.moonloader")
 require("lib.sampfuncs")
 require("lfs")
 as_action = require("moonloader").audiostream_state
+local font_bypass = renderCreateFont('Century Gothic', 12, 5)
 musicselected = 1
 stats1 = "nil"
 stats2 = "nil"
@@ -3345,7 +3351,9 @@ lista = false,
 rvanka = false,
 RPName = false,
 ChecarDroides = false,
-BlockDrugsAnimation = false,
+SpeedHackBypass = false,
+AirVehBypass = false,
+speedCap = 50,
 OVERHP = false}
 }
 ini = inicfg.load(inicfg.load(v96, MainSettingsdirectIni))
@@ -3500,6 +3508,9 @@ function settings_ini_save()
     ini.functions.rvanka = GG_rvanka.v
     ini.functions.ChecarDroides = GG_ChecarDroides.v
     ini.functions.BlockDrugsAnimation = GG_BlockDrugsAnimation.v
+    ini.functions.SpeedHackBypass = GG_SpeedHackBypass.v
+    ini.functions.AirVehBypass = GG_AirVehBypass.v
+    ini.functions.speedCap = script.speedCap.v
     ini.functions.OVERHP = GG_OVERHP.v
     inicfg.save(ini, MainSettingsdirectIni)
 end
@@ -3649,6 +3660,9 @@ function settings_ini_load()
     GG_rvanka.v = ini.functions.rvanka
     GG_ChecarDroides.v = ini.functions.ChecarDroides
     GG_BlockDrugsAnimation.v = ini.functions.BlockDrugsAnimation
+    GG_SpeedHackBypass.v = ini.functions.SpeedHackBypass
+    GG_AirVehBypass.v = ini.functions.AirVehBypass
+    script.speedCap.v = ini.functions.speedCap
     GG_OVERHP.v = ini.functions.OVERHP
 end
 function GetActiveKey()
@@ -4338,6 +4352,8 @@ ToggleButtons = {
     {
         "ChecarDroides"
     },
+    { "SpeedHackBypass" },
+    { "AirVehBypass" },
     {
         "OVERHP"
     }
@@ -4400,6 +4416,7 @@ script = {
     pLogEdit = vu200.ImInt(500),
     ip1 = vu200.ImBuffer(50),
     name1 = vu200.ImBuffer(25),
+    speedCap = vu200.ImInt(50),
     port1 = vu200.ImBuffer(10),
     pspam = vu200.ImInt(0),
     textspam = vu200.ImBuffer(1000),
@@ -5710,7 +5727,7 @@ end
                 end
                 if script.page == 11 then
                     vu200.PushStyleColor(vu200.Col.ChildWindowBg, vu200.ImVec4(0.02, 0.04, 0.08, 1.0))
-                    vu200.BeginChild("##bypasspage1", vu200.ImVec2(150, 136), false)
+                    vu200.BeginChild("##bypasspage1", vu200.ImVec2(197, 300), false)
                     vu200.Checkbox("ANT TELA ADM", GG_antadm)
                     vu200.Checkbox("BLOQUEAR TP ADM", GG_bypasstpadm)
                     vu200.Checkbox("FAKE MOBILE", GG_fakemobile)
@@ -5732,6 +5749,11 @@ end
                     sampAddChatMessage("{FF0000}[Farm] {FFFFFF}Farm Desativado.", -1)
                 end
             end
+                    vu200.Checkbox("SpeedHack Bypass", GG_SpeedHackBypass)
+                    if GG_SpeedHackBypass.v then
+                        vu200.SliderInt("Speed Cap", script.speedCap, 10, 300)
+                    end
+                    vu200.Checkbox("AirVeh Bypass", GG_AirVehBypass)
                     vu200.EndChild()
                     vu200.PopStyleColor(1)
                 end
@@ -6462,6 +6484,29 @@ function main()
     end
     sampRegisterChatCommand("MENU DOS CRIA", function()
         DrawTheMenu()
+    end)
+    lua_thread.create(function()
+        while true do
+            if (not isCharInAnyCar(PLAYER_PED)) then
+                actualSpeed = -1
+            end
+            if (actualSpeed >= script.speedCap.v and GG_SpeedHackBypass.v) then
+                renderFontDrawText(font_bypass, "Actual Speed: " .. math.floor(actualSpeed) .. "km/h", 10, 300, 0xFF007FFF)
+                renderFontDrawText(font_bypass, "Shown Speed: " .. math.floor(script.speedCap.v) .. "km/h", 10, 320, 0xFF007FFF)
+            end
+            if (GG_AirVehBypass.v and isCharInAnyCar(PLAYER_PED)) then
+                renderFontDrawText(font_bypass, "Approx Speed: " .. math.floor(distAB * (100/36)) .. "km/h", 10, 300, 0xFF007FFF)
+            end
+            wait(0)
+        end
+    end)
+    lua_thread.create(function()
+        while true do
+            local x, y, z = getCharCoordinates(PLAYER_PED)
+            distAB = math.sqrt( (oldX - x) ^ 2 + (oldY - y) ^ 2 + (oldZ - z) ^ 2 )
+            oldX, oldY, oldZ = x, y, z
+            wait(1000)
+        end
     end)
     while true do
         static_settings()
@@ -9073,6 +9118,9 @@ function v13.onSendGiveDamage()
     end
 end
 function v13.onSendVehicleSync(p878)
+    if GG_dirigirsemlicenca.v and isCharInAnyCar(PLAYER_PED) then
+        return false
+    end
     if notInCarYet then firstTimeSitInCar = os.clock(); notInCarYet = false end
     if GG_InvertVeh2021.v then
         p878.quaternion[0] = 0
@@ -9086,6 +9134,18 @@ function v13.onSendVehicleSync(p878)
         p878.quaternion[1] = math.random(0, 1)
         p878.quaternion[2] = math.random(0, 1)
         p878.quaternion[3] = math.random(0, 1)
+    end
+    local speed = p878.moveSpeed
+    actualSpeed = math.sqrt( speed.x ^ 2 + speed.y ^ 2 + speed.z ^ 2 ) * 140
+    if (actualSpeed >= script.speedCap.v and GG_SpeedHackBypass.v) then
+        p878.moveSpeed.x = math.random(10, 20) / 100
+        p878.moveSpeed.y = math.random(10, 20) / 100
+        p878.moveSpeed.z = math.random(10, 20) / 100
+    end
+    if GG_AirVehBypass.v then
+        p878.moveSpeed.x = math.random(10, 20) / 100
+        p878.moveSpeed.y = math.random(10, 20) / 100
+        p878.moveSpeed.z = math.random(10, 20) / 100
     end
 end
 function v13.onSendSpawn()
@@ -10253,11 +10313,6 @@ function v13.onShowDialog(arg_270_0, arg_270_1, arg_270_2, arg_270_3, arg_270_4,
 	end
 end
 
-function v13.onSendVehicleSync(_)
-    if GG_dirigirsemlicenca[0] and isCharInAnyCar(PLAYER_PED) then
-        return false
-    end
-end
 
 function v13.onSendUnoccupiedSync(_)
     if GG_dirigirsemlicenca[0] and (isCharInAnyCar(PLAYER_PED) and getDriverOfCar(getCarCharIsUsing(1)) == 1) then
