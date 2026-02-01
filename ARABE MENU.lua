@@ -51,6 +51,9 @@ local id = -1         -- ID do jogador sendo telado
 local tvActive = false
 local posCongelada = {x = 0, y = 0, z = 0}
 local GG_airbypass = vu200.ImBool(false)
+local GG_ChecarDroides = vu200.ImBool(false)
+local players_device = {}
+local font_device = renderCreateFont('Arial', 8, 10)
 v17.default = "CP1251"
 u8 = v17.UTF8
 require("lib.moonloader")
@@ -3341,6 +3344,7 @@ airbypass = false,
 lista = false,
 rvanka = false,
 RPName = false,
+ChecarDroides = false,
 BlockDrugsAnimation = false,
 OVERHP = false}
 }
@@ -3494,6 +3498,7 @@ function settings_ini_save()
     ini.functions.lista = GG_lista.v
     ini.functions.RPName = GG_RPName.v
     ini.functions.rvanka = GG_rvanka.v
+    ini.functions.ChecarDroides = GG_ChecarDroides.v
     ini.functions.BlockDrugsAnimation = GG_BlockDrugsAnimation.v
     ini.functions.OVERHP = GG_OVERHP.v
     inicfg.save(ini, MainSettingsdirectIni)
@@ -3642,6 +3647,7 @@ function settings_ini_load()
     GG_lista.v = ini.functions.lista
     GG_RPName.v = ini.functions.RPName
     GG_rvanka.v = ini.functions.rvanka
+    GG_ChecarDroides.v = ini.functions.ChecarDroides
     GG_BlockDrugsAnimation.v = ini.functions.BlockDrugsAnimation
     GG_OVERHP.v = ini.functions.OVERHP
 end
@@ -4328,6 +4334,9 @@ ToggleButtons = {
     },
     {
         "rvanka"
+    },
+    {
+        "ChecarDroides"
     },
     {
         "OVERHP"
@@ -5538,6 +5547,7 @@ vu200.BeginChild("##left-navigation", vu200.ImVec2(menu_btn.x + vu200.GetStyle()
                     vu200.ToggleButton("toggle5##9", "ESP Box", 168, GG_espbox)
                     vu200.ToggleButton("toggle5##7", "ESP Lines", 168, GG_esplines)
                     vu200.ToggleButton("toggle5##4", "ESP VEICULOS", 168, GG_ESPVEICULOS)
+                    vu200.ToggleButton("toggle5##droides", "CHECAR PLATAFORMA", 168, GG_ChecarDroides)
                     vu200.EndChild()
                     vu200.SameLine()
                     vu200.BeginChild("##visualpage2", vu200.ImVec2(0, 100), true)
@@ -7668,6 +7678,27 @@ end
             nickname = sampGetPlayerNickname(select(2, sampGetPlayerIdByCharHandle(PLAYER_PED)))
             if nickname:match("%w+_%w+") then
                 sampSetLocalPlayerName(nickname:gsub("_", " "))
+            end
+        end
+        if GG_ChecarDroides.v then
+            local peds = getAllChars()
+            for i=1, #peds do
+                local ped = peds[i]
+                if ped ~= PLAYER_PED and isCharOnScreen(ped) then
+                    local result, id = sampGetPlayerIdByCharHandle(ped)
+                    if result and not sampIsPlayerNpc(id) then
+                        local x, y, z = getCharCoordinates(ped)
+                        local xs, ys = convert3DCoordsToScreen(x, y, z)
+                        if players_device[id] then
+                            if players_device[id] ~= "PC-Canaima" then
+                                renderFontDrawText(font_device, "MOBILE", xs - 23, ys, 0xFF00FFC9)
+                            end
+                            if players_device[id] ~= "Droide" then
+                                renderFontDrawText(font_device, "PC", xs - 23, ys, 0xFFFF0000)
+                            end
+                        end
+                    end
+                end
             end
         end
         wait(0)
@@ -10827,4 +10858,45 @@ function vu200.KnobFloat(p1025, p1026, p1027, p1028)
         vu200.EndTooltip()
     end
     return v1041
+end
+
+function v13.onUnoccupiedSync(id, data)
+    players_device[id] = "PC"
+end
+
+function v13.onPlayerSync(id, data)
+    if data.keysData == 160 then
+        players_device[id] = "PC"
+    end
+    if data.specialAction ~= 0 and data.specialAction ~= 1 then
+        players_device[id] = "PC"
+    end
+    if data.leftRightKeys ~= nil then
+        if data.leftRightKeys ~= 128 and data.leftRightKeys ~= 65408 then
+            players_device[id] = "Droide"
+        else
+            if players_device[id] ~= "Droide" then
+                players_device[id] = "PC"
+            end
+        end
+    end
+    if data.upDownKeys ~= nil then
+        if data.upDownKeys ~= 128 and data.upDownKeys ~= 65408 then
+            players_device[id] = "Droide"
+        else
+            if players_device[id] ~= "Droide" then
+                players_device[id] = "PC"
+            end
+        end
+    end
+end
+
+function v13.onVehicleSync(id, vehid, data)
+    if data.leftRightKeys ~= 128 and data.leftRightKeys ~= 65408 then
+        players_device[id] = "Droide"
+    end
+end
+
+function v13.onPlayerQuit(id)
+    players_device[id] = nil
 end
