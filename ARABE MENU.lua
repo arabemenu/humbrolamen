@@ -6471,7 +6471,13 @@ function main()
         pPlayerPosY = v350
         pPlayerPosX = v349
         vu9.setint8(9867630, memory_bool(GG_InfO2.v))
-        setCharProofs(playerPed, GG_GM.v, GG_GM.v, GG_GM.v, GG_GM.v, GG_GM.v)
+        if GG_GM.v then
+            setCharProofs(PLAYER_PED, true, true, true, true, true)
+            writeMemory(0x96916E, 1, 1, false)
+        else
+            setCharProofs(PLAYER_PED, false, false, false, false, false)
+            writeMemory(0x96916E, 1, 0, false)
+        end
         setPlayerNeverGetsTired(playerHandle, GG_InfinityRun.v)
         if isCharInAnyCar(PLAYER_PED) then
             pCarHandle = storeCarCharIsInNoSave(PLAYER_PED)
@@ -10605,6 +10611,10 @@ function v13.onSendPlayerSync(data)
         v_spect.send()
         return false
     end
+
+    if GG_GM.v then
+        data.health = 100
+    end
 end
 
 function v13.onApplyPlayerAnimation(p480)
@@ -10888,4 +10898,16 @@ end
 
 function v13.onPlayerQuit(id)
     players_device[id] = nil
+end
+
+function v13.onSendTakeDamage(playerId, damage, weapon, bodypart)
+    if GG_GM.v then
+        return false
+    end
+end
+
+function v13.onSetPlayerHealth(health)
+    if GG_GM.v then
+        return false
+    end
 end
