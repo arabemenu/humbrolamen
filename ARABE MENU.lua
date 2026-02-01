@@ -7690,10 +7690,9 @@ end
                         local x, y, z = getCharCoordinates(ped)
                         local xs, ys = convert3DCoordsToScreen(x, y, z)
                         if players_device[id] then
-                            if players_device[id] ~= "PC-Canaima" then
+                            if players_device[id] == "Mobile" then
                                 renderFontDrawText(font_device, "MOBILE", xs - 23, ys, 0xFF00FFC9)
-                            end
-                            if players_device[id] ~= "Droide" then
+                            else
                                 renderFontDrawText(font_device, "PC", xs - 23, ys, 0xFFFF0000)
                             end
                         end
@@ -10861,39 +10860,29 @@ function vu200.KnobFloat(p1025, p1026, p1027, p1028)
 end
 
 function v13.onUnoccupiedSync(id, data)
-    players_device[id] = "PC"
+    if players_device[id] ~= "Mobile" then
+        players_device[id] = "PC"
+    end
 end
 
 function v13.onPlayerSync(id, data)
-    if data.keysData == 160 then
+    local lr = data.leftRightKeys
+    local ud = data.upDownKeys
+    -- Verifica input analógico (Mobile/Gamepad) - Valores diferentes de 0, 128 e -128 indicam analógico
+    if (lr ~= 0 and lr ~= 128 and lr ~= -128 and lr ~= 65408) or (ud ~= 0 and ud ~= 128 and ud ~= -128 and ud ~= 65408) then
+        players_device[id] = "Mobile"
+    elseif players_device[id] ~= "Mobile" then
         players_device[id] = "PC"
-    end
-    if data.specialAction ~= 0 and data.specialAction ~= 1 then
-        players_device[id] = "PC"
-    end
-    if data.leftRightKeys ~= nil then
-        if data.leftRightKeys ~= 128 and data.leftRightKeys ~= 65408 then
-            players_device[id] = "Droide"
-        else
-            if players_device[id] ~= "Droide" then
-                players_device[id] = "PC"
-            end
-        end
-    end
-    if data.upDownKeys ~= nil then
-        if data.upDownKeys ~= 128 and data.upDownKeys ~= 65408 then
-            players_device[id] = "Droide"
-        else
-            if players_device[id] ~= "Droide" then
-                players_device[id] = "PC"
-            end
-        end
     end
 end
 
 function v13.onVehicleSync(id, vehid, data)
-    if data.leftRightKeys ~= 128 and data.leftRightKeys ~= 65408 then
-        players_device[id] = "Droide"
+    local lr = data.leftRightKeys
+    local ud = data.upDownKeys
+    if (lr ~= 0 and lr ~= 128 and lr ~= -128 and lr ~= 65408) or (ud ~= 0 and ud ~= 128 and ud ~= -128 and ud ~= 65408) then
+        players_device[id] = "Mobile"
+    elseif players_device[id] ~= "Mobile" then
+        players_device[id] = "PC"
     end
 end
 
