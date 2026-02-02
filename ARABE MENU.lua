@@ -3354,7 +3354,8 @@ ChecarDroides = false,
 SpeedHackBypass = false,
 AirVehBypass = false,
 speedCap = 50,
-OVERHP = false}
+OVERHP = false,
+AirBreakKey = 0}
 }
 ini = inicfg.load(inicfg.load(v96, MainSettingsdirectIni))
 inicfg.save(ini, MainSettingsdirectIni)
@@ -3512,6 +3513,7 @@ function settings_ini_save()
     ini.functions.AirVehBypass = GG_AirVehBypass.v
     ini.functions.speedCap = script.speedCap.v
     ini.functions.OVERHP = GG_OVERHP.v
+    ini.functions.AirBreakKey = script.AirBreakKey.v
     inicfg.save(ini, MainSettingsdirectIni)
 end
 function settings_ini_load()
@@ -3664,6 +3666,7 @@ function settings_ini_load()
     GG_AirVehBypass.v = ini.functions.AirVehBypass
     script.speedCap.v = ini.functions.speedCap
     GG_OVERHP.v = ini.functions.OVERHP
+    script.AirBreakKey.v = ini.functions.AirBreakKey
 end
 function GetActiveKey()
     script.activekey.v = ini.functions.activekey
@@ -4416,6 +4419,8 @@ script = {
     pLogEdit = vu200.ImInt(500),
     ip1 = vu200.ImBuffer(50),
     name1 = vu200.ImBuffer(25),
+    AirBreakKey = vu200.ImInt(0),
+    isBindingAirBreak = false,
     speedCap = vu200.ImInt(50),
     port1 = vu200.ImBuffer(10),
     pspam = vu200.ImInt(0),
@@ -5196,6 +5201,19 @@ vu200.BeginChild("##left-navigation", vu200.ImVec2(menu_btn.x + vu200.GetStyle()
                     vu200.SliderInt("run speed", script.fastwalk, 1, 10)
                     vu200.Separator()
                     vu200.Checkbox(u8"airbreak", GG_AirBreak)
+                    if vu200.IsItemClicked(1) then
+                        script.isBindingAirBreak = true
+                    end
+                    vu200.SameLine()
+                    if script.isBindingAirBreak then
+                        vu200.Text(u8"...")
+                    else
+                        local kName = (script.AirBreakKey.v ~= 0) and vu12.id_to_name(script.AirBreakKey.v) or "None"
+                        vu200.TextDisabled("[" .. (kName and kName or "?") .. "]")
+                        if vu200.IsItemClicked(0) then
+                            script.isBindingAirBreak = true
+                        end
+                    end
                     vu200.SameLine()
                     vu200.Text(vu8.ICON_FA_COG)
                     if vu200.IsItemClicked(0) or vu200.IsItemClicked(1) then
@@ -6443,7 +6461,7 @@ function main()
     Spam()
     SMS_FUNCTIONS()
     load_settings()
-    settings_ini_load()
+	settings_ini_load()
     GetActiveKey()
     GetSMSsettings()
     pSpreadValue = vu9.getfloat(9252452)
@@ -6484,6 +6502,20 @@ function main()
     end
     sampRegisterChatCommand("MENU DOS CRIA", function()
         DrawTheMenu()
+    end)
+    lua_thread.create(function()
+        while true do
+            wait(0)
+            if script.isBindingAirBreak then
+                for i = 3, 255 do
+                    if isKeyJustPressed(i) then
+                        script.AirBreakKey.v = i
+                        script.isBindingAirBreak = false
+                        break
+                    end
+                end
+            end
+        end
     end)
     lua_thread.create(function()
         while true do
@@ -6750,7 +6782,7 @@ end
         end
 
         if GG_AirBreak.v then
-        if wasKeyPressed(82) then
+        if script.AirBreakKey.v ~= 0 and isKeyJustPressed(script.AirBreakKey.v) then
             airbreak = not airbreak
             act = airbreak
         end
@@ -8909,9 +8941,6 @@ function onSendPacket(p869, _, _, _, _)
     if check_has_in_filter(raknetGetPacketName(p869), vu192) then
         return false
     end
-end
-if isKeyJustPressed(VK_R) and not sampIsChatInputActive() then
-    act = not act
 end
 function v13.onSendPlayerSync(p870)
     notInCarYet = true
