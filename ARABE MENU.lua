@@ -1,4 +1,3 @@
-ADMIN_MODE = false
 project = {
     pName = "ARABE MENU",
     pType = "Project",
@@ -3354,7 +3353,8 @@ SpeedHackBypass = false,
 AirVehBypass = false,
 speedCap = 50,
 OVERHP = false,
-AirBreakKey = 0}
+AirBreakKey = 0,
+esp_line_origin = 2}
 }
 ini = inicfg.load(inicfg.load(v96, MainSettingsdirectIni))
 local config_exists = doesFileExist("moonloader\\config\\" .. MainSettingsdirectIni)
@@ -3516,6 +3516,7 @@ function settings_ini_save()
     ini.functions.speedCap = script.speedCap.v
     ini.functions.OVERHP = GG_OVERHP.v
     ini.functions.AirBreakKey = script.AirBreakKey.v
+    ini.functions.esp_line_origin = script.esp_line_origin.v
     inicfg.save(ini, MainSettingsdirectIni)
 end
 function settings_ini_load()
@@ -3669,6 +3670,7 @@ function settings_ini_load()
     script.speedCap.v = ini.functions.speedCap
     GG_OVERHP.v = ini.functions.OVERHP
     script.AirBreakKey.v = ini.functions.AirBreakKey
+    script.esp_line_origin.v = ini.functions.esp_line_origin
 end
 function GetActiveKey()
     script.activekey.v = ini.functions.activekey
@@ -4398,7 +4400,6 @@ UpdateLog = {
 script = {
     start_updating = false,
     window = vu200.ImBool(false),
-    admin_panel = vu200.ImBool(ADMIN_MODE),
     sms_window = vu200.ImBool(false),
     iHUD = vu200.ImBool(false),
     vHUD = vu200.ImBool(false),
@@ -4422,6 +4423,7 @@ script = {
     ip1 = vu200.ImBuffer(50),
     name1 = vu200.ImBuffer(25),
     AirBreakKey = vu200.ImInt(0),
+    esp_line_origin = vu200.ImInt(2),
     isBindingAirBreak = false,
     speedCap = vu200.ImInt(50),
     port1 = vu200.ImBuffer(10),
@@ -4883,6 +4885,7 @@ end
 smallversiontext = nil
 titlefont = nil
 logofont = nil
+menufont = nil
 descfont = nil
 inputfont = nil
 connectfont = nil
@@ -4951,6 +4954,10 @@ function vu200.BeforeDrawFrame()
         logofont = vu200.GetIO().Fonts:AddFontFromFileTTF(getFolderPath(20) .. "\\trebucbi.ttf", 38, nil, vu200.GetIO().Fonts:GetGlyphRangesCyrillic())
         if logofont == nil then logofont = titlefont end
     end
+    if menufont == nil then
+        menufont = vu200.GetIO().Fonts:AddFontFromFileTTF(getFolderPath(20) .. "\\impact.ttf", 38, nil, vu200.GetIO().Fonts:GetGlyphRangesCyrillic())
+        if menufont == nil then menufont = titlefont end
+    end
     if smallversiontext == nil then
         smallversiontext = vu200.GetIO().Fonts:AddFontFromFileTTF(getFolderPath(20) .. "\\trebucbd.ttf", 12, nil, vu200.GetIO().Fonts:GetGlyphRangesCyrillic())
     end
@@ -4982,21 +4989,8 @@ function vu200.OnDrawFrame()
         if script.StaminaHUD.v then
             vu200.ShowCursor = true
         end
-        if script.admin_panel.v then
-            vu200.ShowCursor = true
-        end
     else
         vu200.ShowCursor = false
-    end
-    if script.admin_panel.v then
-        vu200.SetNextWindowPos(vu200.ImVec2(v258 - vu200.GetStyle().ItemSpacing.x, v259 - vu200.GetStyle().ItemSpacing.x), vu200.Cond.FirstUseEver, vu200.ImVec2(1, 1))
-        vu200.SetNextWindowSize(vu200.ImVec2(350, 450), vu200.Cond.FirstUseEver)
-        vu200.PushStyleColor(vu200.Col.WindowBg, vu200.ImVec4(0, 0, 0, 0.5))
-        vu200.PushStyleColor(vu200.Col.ChildWindowBg, vu200.ImVec4(0, 0, 0, 1))
-        vu200.Begin("##admin_tool", nil, 167)
-        vu200.CenterText("")
-        vu200.End()
-        vu200.PopStyleColor(2)
     end
     if version_status ~= "checking..." then
         if version_status == "uptodate" and script.window.v then
@@ -5096,9 +5090,12 @@ vu200.BeginGroup()
             local t1 = "ARABE"
             local t2 = "MENU"
             local w1 = vu200.CalcTextSize(t1).x
-            local w2 = vu200.CalcTextSize(t2).x
             vu200.SetCursorPos(vu200.ImVec2((largura_logo_box - w1) / 2 - 25, 25))
             vu200.TextColored(vu200.ImVec4(0.0, 0.5, 1.0, 1.0), t1)
+            vu200.PopFont()
+
+            vu200.PushFont(menufont)
+            local w2 = vu200.CalcTextSize(t2).x
             vu200.SetCursorPos(vu200.ImVec2((largura_logo_box - w2) / 2 + 25, 60))
             vu200.Text(t2)
             vu200.PopFont()
@@ -5179,14 +5176,14 @@ vu200.BeginChild("##left-navigation", vu200.ImVec2(menu_btn.x + vu200.GetStyle()
                 if script.page == 1 then
                     vu200.PushStyleColor(vu200.Col.ChildWindowBg, vu200.ImVec4(0.02, 0.04, 0.08, 1.0))
                     vu200.BeginChild("##header_player", vu200.ImVec2(0, 60), true)
-                    if vu200.Button(" " .. vu8.ICON_FA_SKULL .. " Suicide", vu200.ImVec2((vu200.GetWindowWidth() - 26) / 2, 24)) then
+                    if vu200.Button(" " .. vu8.ICON_FA_SKULL .. " Suicidio", vu200.ImVec2((vu200.GetWindowWidth() - 26) / 2, 24)) then
                         setCharHealth(PLAYER_PED, 0)
                     end
                     vu200.SameLine()
-                    if vu200.Button(" " .. vu8.ICON_FA_SYNC .. " Respawn", vu200.ImVec2((vu200.GetWindowWidth() - 4) / 2, 24)) then
+                    if vu200.Button(" " .. vu8.ICON_FA_SYNC .. " Renascer", vu200.ImVec2((vu200.GetWindowWidth() - 4) / 2, 24)) then
                         sampSpawnPlayer()
                     end
-                    if vu200.Button(" " .. vu8.ICON_FA_HEART .. " Reset Healh", vu200.ImVec2((vu200.GetWindowWidth() - 26) / 2, 24)) then
+                    if vu200.Button(" " .. vu8.ICON_FA_HEART .. " Resetar Vida", vu200.ImVec2((vu200.GetWindowWidth() - 26) / 2, 24)) then
                         if GG_OVERHP.v then
                             setCharHealth(PLAYER_PED, 160)
                         else
@@ -5195,35 +5192,35 @@ vu200.BeginChild("##left-navigation", vu200.ImVec2(menu_btn.x + vu200.GetStyle()
                     end
                     vu200.SameLine()
                     if getCharArmour(PLAYER_PED) <= 1 then
-                        if vu200.Button(" " .. vu8.ICON_FA_SHIELD_ALT .. " Get Armour", vu200.ImVec2((vu200.GetWindowWidth() - 4) / 2, 24)) then
+                        if vu200.Button(" " .. vu8.ICON_FA_SHIELD_ALT .. " Pegar Colete", vu200.ImVec2((vu200.GetWindowWidth() - 4) / 2, 24)) then
                             addArmourToChar(playerPed, 100)
                         end
-                    elseif vu200.Button(" " .. vu8.ICON_FA_SHIELD_ALT .. " Reset Armour", vu200.ImVec2((vu200.GetWindowWidth() - 4) / 2, 24)) then
+                    elseif vu200.Button(" " .. vu8.ICON_FA_SHIELD_ALT .. " Resetar Colete", vu200.ImVec2((vu200.GetWindowWidth() - 4) / 2, 24)) then
                         addArmourToChar(playerPed, 100)
                     end
                     vu200.EndChild()
                     vu200.BeginChild("##playerpage1", vu200.ImVec2(204, 320), false)
-                    vu200.CheckboxRight("GodMode", "God Mode", 180, GG_GM)
-                    vu200.ToggleButton("toggle1##2", "No Fall ", 175, GG_NoFall)
-                    vu200.ToggleButton("toggle1##rotation", "Fast Rotation ", 175, GG_FastRotation)
-                    vu200.ToggleButton("toggle1##3", "AutoRun", 175, GG_autorun)
-                    vu200.ToggleButton("toggle1##4", "Infinity Run", 175, GG_InfinityRun)
-                    vu200.ToggleButton("toggle1##5", "Mega Jump", 175, GG_MegaJump)
+                    vu200.CheckboxRight("GodMode", "Modo Deus", 180, GG_GM)
+                    vu200.ToggleButton("toggle1##2", "Sem queda", 175, GG_NoFall)
+                    vu200.ToggleButton("toggle1##rotation", "Rotacao Rapida", 175, GG_FastRotation)
+                    vu200.ToggleButton("toggle1##3", "Corrida Auto", 175, GG_autorun)
+                    vu200.ToggleButton("toggle1##4", "Corrida Infinita", 175, GG_InfinityRun)
+                    vu200.ToggleButton("toggle1##5", "Mega Pulo", 175, GG_MegaJump)
                     vu200.ToggleButton("toggle1##6", "Anti Stun", 175, GG_AntiStun)
-                    vu200.ToggleButton("toggle1##7", "Fugga", 175, GG_Fugga)
-                    vu200.ToggleButton("toggle1##8", "Anti Afk", 175, GG_AntiAfk)
-                    vu200.ToggleButton("toggle1##inf02", "Infinity Oxygen", 175, GG_InfO2)
-                    vu200.ToggleButton("toggle1##9", "Invisible [OnFoot]", 175, GG_Invisible)
+                    vu200.ToggleButton("toggle1##7", "Voar Cima (Fugga)", 175, GG_Fugga)
+                    vu200.ToggleButton("toggle1##8", "Anti AFK", 175, GG_AntiAfk)
+                    vu200.ToggleButton("toggle1##inf02", "Oxigenio Infinito", 175, GG_InfO2)
+                    vu200.ToggleButton("toggle1##9", "Invisivel", 175, GG_Invisible)
                     vu200.Checkbox("Rvanka", GG_rvanka)
-                    vu200.Checkbox("Invert Mode", GG_InvertPlayer2021)
-                    vu200.Checkbox("Crazy Mode", GG_CrazyPlayer2021)
+                    vu200.Checkbox("Modo Invertido", GG_InvertPlayer2021)
+                    vu200.Checkbox("Modo Louco", GG_CrazyPlayer2021)
                     vu200.EndChild()
                     vu200.SameLine()
                     vu200.BeginChild("##playerpage2", vu200.ImVec2(0, 320), false)
-                    vu200.Checkbox("Fast Walk", GG_FastWalk)
-                    vu200.SliderInt("run speed", script.fastwalk, 1, 10)
+                    vu200.Checkbox("Andar Rapido", GG_FastWalk)
+                    vu200.SliderInt("Velocidade", script.fastwalk, 1, 10)
                     vu200.Separator()
-                    vu200.Checkbox(u8"airbreak", GG_AirBreak)
+                    vu200.Checkbox(u8"AirBreak", GG_AirBreak)
                     if vu200.IsItemClicked(1) then
                         script.isBindingAirBreak = true
                     end
@@ -5243,8 +5240,8 @@ vu200.BeginChild("##left-navigation", vu200.ImVec2(menu_btn.x + vu200.GetStyle()
                     vu200.OpenPopup("velocity_popup")
                     end
                     if vu200.BeginPopup("velocity_popup") then
-                        vu200.Text("AirBreak settings")
-                        vu200.SliderFloat("AirBreak Speed", script.AirBreakSpeed, 0.1, 5.0, "%.2f")
+                        vu200.Text("Config AirBreak")
+                        vu200.SliderFloat("Velocidade AirBreak", script.AirBreakSpeed, 0.1, 5.0, "%.2f")
                         vu200.Separator()
                         vu200.EndPopup()
                     end
@@ -5345,63 +5342,63 @@ vu200.BeginChild("##left-navigation", vu200.ImVec2(menu_btn.x + vu200.GetStyle()
                 if script.page == 3 then
                     vu200.PushStyleColor(vu200.Col.ChildWindowBg, vu200.ImVec4(0.02, 0.04, 0.08, 1.0))
                     vu200.BeginChild("##weaponspage1", vu200.ImVec2(200, 0), false)
-                    if vu200.Button(vu8.ICON_FA_TRASH .. " Remove All Weapons", vu200.ImVec2((vu200.GetWindowWidth() - 8) / 1, 23)) then
+                    if vu200.Button(vu8.ICON_FA_TRASH .. " Remover Todas Armas", vu200.ImVec2((vu200.GetWindowWidth() - 8) / 1, 23)) then
                         removeAllCharWeapons(PLAYER_PED)
                     end
                     current_weapon_name = vu7.get_name(getCurrentCharWeapon(PLAYER_PED))
                     if current_weapon_name == nil then
                         current_weapon_name = "Unknow"
                     end
-                    if vu200.Button(vu8.ICON_FA_TRASH .. " Remove Current Weapon (" .. current_weapon_name .. ")", vu200.ImVec2((vu200.GetWindowWidth() - 8) / 1, 23)) then
+                    if vu200.Button(vu8.ICON_FA_TRASH .. " Remover Arma Atual (" .. current_weapon_name .. ")", vu200.ImVec2((vu200.GetWindowWidth() - 8) / 1, 23)) then
                         removeWeaponFromChar(PLAYER_PED, getCurrentCharWeapon(PLAYER_PED))
                     end
                     vu200.Separator()
                     vu200.PushStyleVar(vu200.StyleVar.ChildWindowRounding, 0)
                     vu200.BeginChild("aimfunctions xD", vu200.ImVec2(0, 150), false)
-                    vu200.ToggleButton("toggle2##camrestor", "No Cam Restore", 150, GG_noCamRestore)
-                    vu200.ToggleButton("toggle2##1", "Infinity Ammo", 150, GG_InfinityAmmo)
-                    vu200.ToggleButton("toggle2##2", "Full Skills", 150, GG_FullSkills)
-                    vu200.ToggleButton("toggle2##3", "No Reload", 150, GG_NoReload)
-                    vu200.ToggleButton("toggle2##4", "Bell Sound", 150, GG_bell)
-                    vu200.ToggleButton("toggle2##6", "No Spread", 150, GG_NoSpread)
+                    vu200.ToggleButton("toggle2##camrestor", "Sem Restaurar Cam", 150, GG_noCamRestore)
+                    vu200.ToggleButton("toggle2##1", "Municao Infinita", 150, GG_InfinityAmmo)
+                    vu200.ToggleButton("toggle2##2", "Habilidades Max", 150, GG_FullSkills)
+                    vu200.ToggleButton("toggle2##3", "Sem Recarregar", 150, GG_NoReload)
+                    vu200.ToggleButton("toggle2##4", "Som de Sino", 150, GG_bell)
+                    vu200.ToggleButton("toggle2##6", "Sem Espalhar", 150, GG_NoSpread)
                     vu200.ToggleButton("toggle2##7", "SensFix", 150, GG_SensFix)
-                    vu200.ToggleButton("toggle2##12", "GTA V Aim System", 150, GG_gtavaim)
+                    vu200.ToggleButton("toggle2##12", "Mira GTA V", 150, GG_gtavaim)
                     vu200.EndChild()
                     vu200.PopStyleVar()
                     vu200.Separator()
                     vu200.Checkbox("Cbug", GG_Cbug)
                     vu200.SameLine()
-                    if vu200.Button(" " .. vu8.ICON_FA_COG .. " Settings##cbug") then
+                    if vu200.Button(" " .. vu8.ICON_FA_COG .. " Config##cbug") then
                         vu200.OpenPopup("cbug")
                     end
                     if vu200.BeginPopup("cbug") then
-                        vu200.RadioButton("+C Helper ", script.radio_cbug, 0)
+                        vu200.RadioButton("+C Ajuda ", script.radio_cbug, 0)
                         vu200.RadioButton("Auto +C ", script.radio_cbug, 1)
-                        vu200.RadioButton("Rapid +C ", script.radio_cbug, 2)
+                        vu200.RadioButton("Rapido +C ", script.radio_cbug, 2)
                         vu200.EndPopup()
                     end
                     vu200.Checkbox("TriggerBot", GG_trigger)
                     vu200.Checkbox("AimBot", GG_AimBot)
                     vu200.SameLine()
-                    if vu200.Button(" " .. vu8.ICON_FA_COG .. " Settings##AB") then
+                    if vu200.Button(" " .. vu8.ICON_FA_COG .. " Config##AB") then
                         vu200.OpenPopup("aimbotsettings")
                     end
                     if vu200.BeginPopup("aimbotsettings") then
                         vu200.BeginGroup()
                         vu200.Text("Config:")
-                        vu200.Checkbox("Skip Dead", aimbot.skipDead)
-                        vu200.Checkbox("Don\'t aim while playing animations", aimbot.disabledOnAnim)
-                        vu200.Checkbox("Doesn\'t target if clist is equal to your", aimbot.disabledIfFriend)
-                        vu200.Checkbox("Don`t aim while player is AFK", aimbot.disabledOnAFk)
+                        vu200.Checkbox("Ignorar Mortos", aimbot.skipDead)
+                        vu200.Checkbox("Nao mirar em animacoes", aimbot.disabledOnAnim)
+                        vu200.Checkbox("Ignorar mesma cor (Clist)", aimbot.disabledIfFriend)
+                        vu200.Checkbox("Nao mirar em AFK", aimbot.disabledOnAFk)
                         vu200.PushItemWidth(150)
-                        vu200.SliderFloat("Smooth aiming", aimbot.smoothSpeed, 1, 30, "%.1f")
-                        vu200.SliderFloat("Increase the smoothness", aimbot.addSmoothSpeed, 1, 30, "%.1f")
+                        vu200.SliderFloat("Suavidade", aimbot.smoothSpeed, 1, 30, "%.1f")
+                        vu200.SliderFloat("Aumentar Suavidade", aimbot.addSmoothSpeed, 1, 30, "%.1f")
                         vu200.SliderFloat("FOV", aimbot.jobRadius, 1, 300, "%.1f")
                         vu200.PopItemWidth()
                         vu200.EndGroup()
                         vu200.SameLine()
                         vu200.BeginGroup()
-                        vu200.Text("Body Part:")
+                        vu200.Text("Parte do Corpo:")
                         if script.bodyPartImg then
                             local p = vu200.GetCursorPos()
                             vu200.Image(script.bodyPartImg, vu200.ImVec2(100, 200))
@@ -5410,24 +5407,24 @@ vu200.BeginChild("##left-navigation", vu200.ImVec2(menu_btn.x + vu200.GetStyle()
                             if vu200.Checkbox("##HeadAB", aimbot.bHead) then
                                 if aimbot.bHead.v then aimbot.bone.v = 1; aimbot.bTorso.v = false; aimbot.bGroin.v = false else aimbot.bone.v = 0 end
                             end
-                            if vu200.IsItemHovered() then vu200.SetTooltip("Head") end
+                            if vu200.IsItemHovered() then vu200.SetTooltip("Cabeca") end
 
                             vu200.SetCursorPos(vu200.ImVec2(p.x + 40, p.y + 50))
                             if vu200.Checkbox("##TorsoAB", aimbot.bTorso) then
                                 if aimbot.bTorso.v then aimbot.bone.v = 2; aimbot.bHead.v = false; aimbot.bGroin.v = false else aimbot.bone.v = 0 end
                             end
-                            if vu200.IsItemHovered() then vu200.SetTooltip("Chest") end
+                            if vu200.IsItemHovered() then vu200.SetTooltip("Peito") end
 
                             vu200.SetCursorPos(vu200.ImVec2(p.x + 40, p.y + 90))
                             if vu200.Checkbox("##GroinAB", aimbot.bGroin) then
                                 if aimbot.bGroin.v then aimbot.bone.v = 3; aimbot.bHead.v = false; aimbot.bTorso.v = false else aimbot.bone.v = 0 end
                             end
-                            if vu200.IsItemHovered() then vu200.SetTooltip("Groin") end
+                            if vu200.IsItemHovered() then vu200.SetTooltip("Virilha") end
                             
                             vu200.SetCursorPos(vu200.ImVec2(p.x, p.y + 205))
                         else
-                            local bones = {"Nearest", "Head", "Chest", "Groin"}
-                            vu200.Combo("Bone", aimbot.bone, bones, #bones)
+                            local bones = {"Mais Proximo", "Cabeca", "Peito", "Virilha"}
+                            vu200.Combo("Osso", aimbot.bone, bones, #bones)
                         end
                         vu200.EndGroup()
                         vu200.EndPopup()
@@ -5442,23 +5439,23 @@ vu200.BeginChild("##left-navigation", vu200.ImVec2(menu_btn.x + vu200.GetStyle()
                     end
                     if vu200.BeginPopup("silentsettings") then
                         vu200.BeginGroup()
-                        vu200.Text("dist:")
+                        vu200.Text("Distancia:")
                         vu200.PushItemWidth(150)
                         vu200.SliderFloat("Fov", imgSliderInfFov, 0, 80)
-                        vu200.SliderFloat("Hit", imgSliderInfRand, 0, 100)
+                        vu200.SliderFloat("Acerto", imgSliderInfRand, 0, 100)
                         vu200.PopItemWidth()
                         vu200.Text("Config:")
-                        vu200.Checkbox(u8("Ignore objects "), imgClickInfObj)
-                        vu200.Checkbox(u8("Ignore transport "), imgClickInfVeh)
-                        vu200.Checkbox(u8("Ignore players with my color "), imgClickinfClist)
-                        vu200.Checkbox(u8("Draw lines"), imgClickInfLine)
+                        vu200.Checkbox(u8("Ignorar Objetos "), imgClickInfObj)
+                        vu200.Checkbox(u8("Ignorar Veiculos "), imgClickInfVeh)
+                        vu200.Checkbox(u8("Ignorar mesma cor "), imgClickinfClist)
+                        vu200.Checkbox(u8("Desenhar Linhas"), imgClickInfLine)
                         vu200.PushItemWidth(150)
-                        vu200.SliderFloat(u8("Blood Density "), imgSliderInfBlood, 0, 100)
+                        vu200.SliderFloat(u8("Densidade Sangue "), imgSliderInfBlood, 0, 100)
                         vu200.PopItemWidth()
                         vu200.EndGroup()
                         vu200.SameLine()
                         vu200.BeginGroup()
-                        vu200.Text("Body parts:")
+                        vu200.Text("Partes do Corpo:")
                         if script.bodyPartImg then
                             local p = vu200.GetCursorPos()
                             vu200.Image(script.bodyPartImg, vu200.ImVec2(100, 200))
@@ -5467,25 +5464,25 @@ vu200.BeginChild("##left-navigation", vu200.ImVec2(menu_btn.x + vu200.GetStyle()
                             if vu200.Checkbox("##Head", imgClickinfHead) then
                                 DisableAllBody(false, false, true)
                             end
-                            if vu200.IsItemHovered() then vu200.SetTooltip("Head") end
+                            if vu200.IsItemHovered() then vu200.SetTooltip("Cabeca") end
 
                             vu200.SetCursorPos(vu200.ImVec2(p.x + 40, p.y + 50))
                             if vu200.Checkbox("##Torso", imgClickinfTorso) then
                                 DisableAllBody(true, false, false)
                             end
-                            if vu200.IsItemHovered() then vu200.SetTooltip("Torso") end
+                            if vu200.IsItemHovered() then vu200.SetTooltip("Peito") end
 
                             vu200.SetCursorPos(vu200.ImVec2(p.x + 40, p.y + 90))
                             if vu200.Checkbox("##Groin", imgClickinfGroin) then
                                 DisableAllBody(false, true, false)
                             end
-                            if vu200.IsItemHovered() then vu200.SetTooltip("Groin") end
+                            if vu200.IsItemHovered() then vu200.SetTooltip("Virilha") end
                             
                             vu200.SetCursorPos(vu200.ImVec2(p.x, p.y + 205))
                         else
-                            if vu200.Checkbox(u8("Head "), imgClickinfHead) then DisableAllBody(false, false, true) end
-                            if vu200.Checkbox(u8("Torso"), imgClickinfTorso) then DisableAllBody(true, false, false) end
-                            if vu200.Checkbox(u8("Groin"), imgClickinfGroin) then DisableAllBody(false, true, false) end
+                            if vu200.Checkbox(u8("Cabeca "), imgClickinfHead) then DisableAllBody(false, false, true) end
+                            if vu200.Checkbox(u8("Peito"), imgClickinfTorso) then DisableAllBody(true, false, false) end
+                            if vu200.Checkbox(u8("Virilha"), imgClickinfGroin) then DisableAllBody(false, true, false) end
                         end
                         vu200.EndGroup()
                         vu200.EndPopup()
@@ -5493,14 +5490,14 @@ vu200.BeginChild("##left-navigation", vu200.ImVec2(menu_btn.x + vu200.GetStyle()
                     vu200.EndChild()
                     vu200.SameLine()
                     vu200.BeginChild("##weaponspage2", vu200.ImVec2(0, 0), true)
-                    vu200.ToggleButton("toggle2##10", "Send damage", 210, GG_damager)
-                    vu200.ToggleButton("toggle2##11", "Minigun damager", 210, GG_cdamage)
+                    vu200.ToggleButton("toggle2##10", "Enviar Dano", 210, GG_damager)
+                    vu200.ToggleButton("toggle2##11", "Dano Minigun", 210, GG_cdamage)
                     vu200.Separator()
-                    vu200.Checkbox("Rapid Fire", GG_Rapid)
-                    vu200.SliderInt("Rapid Speed", script.RapidSpeed, 1, 15)
+                    vu200.Checkbox("Tiro Rapido", GG_Rapid)
+                    vu200.SliderInt("Velocidade Tiro", script.RapidSpeed, 1, 15)
                     vu200.BeginChild("##weaponspage3", vu200.ImVec2(0, 0), true)
                     vu200.PushStyleVar(vu200.StyleVar.ButtonTextAlign, vu200.ImVec2(0.5, 0.5))
-                    vu200.InputInt("Ammo", script.weapon_ammo, 1, 10, 0)
+                    vu200.InputInt("Municao", script.weapon_ammo, 1, 10, 0)
                     vu200.PopStyleVar()
                     ret = 0
                     local v277, v278, v279 = ipairs(weapons_pictures)
@@ -5527,20 +5524,20 @@ vu200.BeginChild("##left-navigation", vu200.ImVec2(menu_btn.x + vu200.GetStyle()
                 if script.page == 4 then
                     vu200.PushStyleColor(vu200.Col.ChildWindowBg, vu200.ImVec4(0.02, 0.04, 0.08, 1.0))
                     vu200.BeginChild("##vehiclepage1", vu200.ImVec2(200, 0), true)
-                    vu200.ToggleButton("toggle4##1", "GodMode Car", 170, GG_GMCar)
-                    vu200.ToggleButton("toggle4##wheels", "GodMode Wheels", 170, GG_GMWheels)
-                    vu200.ToggleButton("toggle4##2", "No Fall Of Bike", 170, GG_Fbike)
-                    vu200.ToggleButton("toggle4##3", "Flood Comp", 170, GG_FC)
-                    vu200.ToggleButton("toggle4##4", "Tank Mode", 170, GG_Tmode)
-                    vu200.ToggleButton("toggle4##5", "Infinity Fuel", 170, GG_InfinityFuel)
-                    vu200.ToggleButton("toggle4##6", "No Radio", 170, GG_NoRadio)
-                    vu200.ToggleButton("toggle4##7", "Rid on wather", 170, GG_Water)
-                    vu200.ToggleButton("toggle4##underwater", "Drive Under Water", 170, GG_driveUnderWater)
+                    vu200.ToggleButton("toggle4##1", "GodMode Carro", 170, GG_GMCar)
+                    vu200.ToggleButton("toggle4##wheels", "GodMode Pneus", 170, GG_GMWheels)
+                    vu200.ToggleButton("toggle4##2", "Nao Cair da Moto", 170, GG_Fbike)
+                    vu200.ToggleButton("toggle4##3", "Flood Componentes", 170, GG_FC)
+                    vu200.ToggleButton("toggle4##4", "Modo Tanque", 170, GG_Tmode)
+                    vu200.ToggleButton("toggle4##5", "Gasolina Infinita", 170, GG_InfinityFuel)
+                    vu200.ToggleButton("toggle4##6", "Sem Radio", 170, GG_NoRadio)
+                    vu200.ToggleButton("toggle4##7", "Andar na Agua", 170, GG_Water)
+                    vu200.ToggleButton("toggle4##underwater", "Dirigir Embaixo d'Agua", 170, GG_driveUnderWater)
                     vu200.ToggleButton("toggle4##8", "Car Shot", 170, GG_CarShot)
-                    vu200.ToggleButton("toggle4##9", "High BMX jump", 170, GG_bmx)
-                    vu200.ToggleButton("toggle4##10", "Nitro Mode (press Num0)", 170, GG_Nitro)
-                    vu200.ToggleButton("toggle4##11", "dirigir sem licenca", 170, GG_dirigirsemlicenca)
-                    vu200.ToggleButton("toggle4##15", "destrancar", 170, GG_destrancar)
+                    vu200.ToggleButton("toggle4##9", "Super Pulo BMX", 170, GG_bmx)
+                    vu200.ToggleButton("toggle4##10", "Modo Nitro (Num0)", 170, GG_Nitro)
+                    vu200.ToggleButton("toggle4##11", "Dirigir Sem Licenca", 170, GG_dirigirsemlicenca)
+                    vu200.ToggleButton("toggle4##15", "Destrancar", 170, GG_destrancar)
                     vu200.Checkbox(u8"Bloquear RPC", GG_bloquearrpc)
                     vu200.SameLine()
                     vu200.Text(vu8.ICON_FA_COG)
@@ -5557,21 +5554,21 @@ vu200.BeginChild("##left-navigation", vu200.ImVec2(menu_btn.x + vu200.GetStyle()
 
                     vu200.Separator()
                     vu200.PushStyleVar(vu200.StyleVar.ButtonTextAlign, vu200.ImVec2(0.5, 0.4))
-                    if vu200.Button("Explode your Vehicle", vu200.ImVec2((vu200.GetWindowWidth() - 13) / 2, 20)) and isCharInAnyCar(PLAYER_PED) then
+                    if vu200.Button("Explodir seu Veiculo", vu200.ImVec2((vu200.GetWindowWidth() - 13) / 2, 20)) and isCharInAnyCar(PLAYER_PED) then
                         veh = storeCarCharIsInNoSave(PLAYER_PED)
                         setCarHealth(veh, 1)
                     end
                     vu200.SameLine()
-                    if vu200.Button("Repair vehicle", vu200.ImVec2((vu200.GetWindowWidth() - 13) / 2, 20)) and isCharInAnyCar(PLAYER_PED) then
+                    if vu200.Button("Reparar Veiculo", vu200.ImVec2((vu200.GetWindowWidth() - 13) / 2, 20)) and isCharInAnyCar(PLAYER_PED) then
                         veh = storeCarCharIsInNoSave(PLAYER_PED)
                         setCarHealth(veh, 10000000)
                     end
-                    if vu200.Button("Add Hydraulics", vu200.ImVec2((vu200.GetWindowWidth() - 13) / 2, 20)) and isCharInAnyCar(PLAYER_PED) then
+                    if vu200.Button("Adicionar Hidraulica", vu200.ImVec2((vu200.GetWindowWidth() - 13) / 2, 20)) and isCharInAnyCar(PLAYER_PED) then
                         veh = storeCarCharIsInNoSave(PLAYER_PED)
                         setCarHydraulics(veh, true)
                     end
                     vu200.SameLine()
-                    if vu200.Button("Remove Hydraulics", vu200.ImVec2((vu200.GetWindowWidth() - 13) / 2, 20)) and isCharInAnyCar(PLAYER_PED) then
+                    if vu200.Button("Remover Hidraulica", vu200.ImVec2((vu200.GetWindowWidth() - 13) / 2, 20)) and isCharInAnyCar(PLAYER_PED) then
                         veh = storeCarCharIsInNoSave(PLAYER_PED)
                         setCarHydraulics(veh, false)
                     end
@@ -5579,18 +5576,18 @@ vu200.BeginChild("##left-navigation", vu200.ImVec2(menu_btn.x + vu200.GetStyle()
                     vu200.EndChild()
                     vu200.SameLine()
                     vu200.BeginChild("##vehiclepage2", vu200.ImVec2(0, 0), true)
-                    vu200.Checkbox("Car Jump (press left shift)", GG_CarJump)
-                    vu200.SliderFloat("jump length", script.lengthJump, 0.1, 1.5)
+                    vu200.Checkbox("Pulo do Carro (LShift)", GG_CarJump)
+                    vu200.SliderFloat("Forca do Pulo", script.lengthJump, 0.1, 1.5)
                     vu200.Separator()
-                    vu200.Checkbox("SpeedHack (press ALT)", GG_altspeed)
+                    vu200.Checkbox("SpeedHack (ALT)", GG_altspeed)
                     vu200.SameLine()
-                    vu200.HintTooltipQuestion(u8("Speeds up your car."))
-                    vu200.SliderInt("Max speed", script.altspeedhack, 100, 800)
+                    vu200.HintTooltipQuestion(u8("Acelera seu carro."))
+                    vu200.SliderInt("Velocidade Max", script.altspeedhack, 100, 800)
                     vu200.Separator()
-                    vu200.ToggleButton("toggle4##drift", "Drift Mode (press left ctrl)", 230, GG_driftInCar)
+                    vu200.ToggleButton("toggle4##drift", "Modo Drift (LCtrl)", 230, GG_driftInCar)
                     vu200.Separator()
-                    vu200.ToggleButton("toggle4##12", "Invert Mode Veh", 190, GG_InvertVeh2021)
-                    vu200.ToggleButton("toggle4##13", "Crazy Mode Veh", 190, GG_CrazyVeh2021)
+                    vu200.ToggleButton("toggle4##12", "Modo Invertido Veic", 190, GG_InvertVeh2021)
+                    vu200.ToggleButton("toggle4##13", "Modo Louco Veic", 190, GG_CrazyVeh2021)
                     vu200.ToggleButton("toggle4##15", "RIFA DO BUZEIRA", 190, GG_rifadobuzeira)
                     vu200.ToggleButton("toggle4##16", "GRUDAR EXPLODIR", 190, GG_grudarexplodir)
                     vu200.ToggleButton("toggle4##19", "TELAGEM", 190, GG_telagem)
@@ -5602,43 +5599,43 @@ vu200.BeginChild("##left-navigation", vu200.ImVec2(menu_btn.x + vu200.GetStyle()
                     end
                     vu200.ToggleButton("toggle4##20", "PARAR JOGADORES", 190, GG_pararjogadores)
                     vu200.Separator()
-                    if vu200.CollapsingHeader("Unlock any vehicle !") then
-                        vu200.Text("NOTE:Type /dl in the chat to see vehicle IDs")
+                    if vu200.CollapsingHeader("Destrancar qualquer veiculo !") then
+                        vu200.Text("NOTA: Digite /dl no chat para ver IDs")
                         vu200.Separator()
-                        vu200.InputText("vehicle\'s ID", script.unlock_carID, 1)
-                        if vu200.Button(vu8.ICON_FA_UNLOCK .. " Unlock") then
+                        vu200.InputText("ID do Veiculo", script.unlock_carID, 1)
+                        if vu200.Button(vu8.ICON_FA_UNLOCK .. " Destrancar") then
                             openVehicle(script.unlock_carID.v)
                         end
                         vu200.Separator()
                     end
-                    if vu200.CollapsingHeader("Vehicles troll") then
+                    if vu200.CollapsingHeader("Trollar Veiculos") then
                         vu200.Text("     ")
                         vu200.SameLine()
                         vu200.BeginGroup()
-                        vu200.Text("NOTE: Type /dl in the chat to see vehicle \nIDs")
+                        vu200.Text("NOTA: Digite /dl no chat para ver \nIDs")
                         vu200.Separator()
-                        if vu200.CollapsingHeader("Warp to vehicle by ID") then
+                        if vu200.CollapsingHeader("Ir ate veiculo por ID") then
                             vu200.PushItemWidth(150)
-                            vu200.InputText("vehicle ID##warpto", script.warp_carID, 1)
-                            if vu200.Button("Warp to vehicle##lol", vu200.ImVec2(- 0.1, 0)) then
+                            vu200.InputText("ID do veiculo##warpto", script.warp_carID, 1)
+                            if vu200.Button("Ir ate veiculo##lol", vu200.ImVec2(- 0.1, 0)) then
                                 WarpToVehicle(script.warp_carID.v)
                             end
                             vu200.Separator()
                         end
-                        if vu200.CollapsingHeader("Warp vehicle to you by ID") then
+                        if vu200.CollapsingHeader("Puxar veiculo por ID") then
                             vu200.PushItemWidth(150)
-                            vu200.InputText("vehicle ID##getvehicle", script.get_carID, 1)
-                            if vu200.Button("Warp vehicle to you##lol", vu200.ImVec2(- 0.1, 0)) then
+                            vu200.InputText("ID do veiculo##getvehicle", script.get_carID, 1)
+                            if vu200.Button("Puxar veiculo##lol", vu200.ImVec2(- 0.1, 0)) then
                                 GetVehicle(script.get_carID.v)
                             end
                             vu200.Separator()
                         end
-                        if vu200.CollapsingHeader("explode vehicle") then
-                            vu200.Text("WARN: {Use on empty vehicles")
+                        if vu200.CollapsingHeader("Explodir veiculo") then
+                            vu200.Text("AVISO: {Use em veiculos vazios")
                             vu200.Separator()
                             vu200.PushItemWidth(150)
-                            vu200.InputText("vehicle ID##explode", script.explode_carID, 1)
-                            if vu200.Button("Explode vehicle", vu200.ImVec2(- 0.1, 0)) then
+                            vu200.InputText("ID do veiculo##explode", script.explode_carID, 1)
+                            if vu200.Button("Explodir veiculo", vu200.ImVec2(- 0.1, 0)) then
                                 ExplodeVehicle(script.explode_carID.v)
                             end
                         end
@@ -5649,11 +5646,23 @@ vu200.BeginChild("##left-navigation", vu200.ImVec2(menu_btn.x + vu200.GetStyle()
                 end
                 if script.page == 5 then
                     vu200.PushStyleColor(vu200.Col.ChildWindowBg, vu200.ImVec4(0.02, 0.04, 0.08, 1.0))
-                    vu200.BeginChild("##visualpage1", vu200.ImVec2(197, 300), true)
+                    vu200.BeginChild("##visualpage1", vu200.ImVec2(220, 300), true)
                     vu200.ToggleButton("toggle5##1", "ESP Names", 168, GG_NameTags)
                     vu200.ToggleButton("toggle5##2", "ESP Bones", 168, GG_SkeletalWallHack)
                     vu200.ToggleButton("toggle5##9", "ESP Box", 168, GG_espbox)
                     vu200.ToggleButton("toggle5##7", "ESP Lines", 168, GG_esplines)
+                    vu200.SameLine()
+                    vu200.Text(vu8.ICON_FA_COG)
+                    if vu200.IsItemClicked() then
+                        vu200.OpenPopup("esplines_popup")
+                    end
+                    if vu200.BeginPopup("esplines_popup") then
+                        vu200.Text("Origem da Linha:")
+                        vu200.RadioButton("Topo", script.esp_line_origin, 0)
+                        vu200.RadioButton("Meio", script.esp_line_origin, 1)
+                        vu200.RadioButton("Baixo", script.esp_line_origin, 2)
+                        vu200.EndPopup()
+                    end
                     vu200.ToggleButton("toggle5##4", "ESP VEICULOS", 168, GG_ESPVEICULOS)
                     vu200.ToggleButton("toggle5##droides", "CHECAR PLATAFORMA", 168, GG_ChecarDroides)
                     vu200.EndChild()
@@ -7072,12 +7081,13 @@ end
             for v432 = 0, sampGetMaxPlayerId() do
                 if sampIsPlayerConnected(v432) then
                     local v433, v434 = sampGetCharHandleBySampPlayerId(v432)
-                    local v435 = sampGetPlayerColor(v432)
-                    local _, v436, v437, v438 = explode_argb(v435)
-                    local v439 = join_argb(255, v436, v437, v438)
                     if v433 then
                         if doesCharExist(v434) then
                             if isCharOnScreen(v434) then
+                                local myX, myY, myZ = getCharCoordinates(PLAYER_PED)
+                                local tX, tY, tZ = getCharCoordinates(v434)
+                                local isVisible = isLineOfSightClear(myX, myY, myZ, tX, tY, tZ, true, false, false, true, false)
+                                local v439 = isVisible and 0xFF00FF00 or 0xFFFF0000
                                 local v440 = {
                                     3,
                                     4,
@@ -7109,7 +7119,7 @@ end
                                     local v450, v451 = convert3DCoordsToScreen(pos2X, pos2Y, pos2Z)
                                     pos4 = v451
                                     pos3 = v450
-                                    renderDrawLine(pos1, pos2, pos3, pos4, 2, v439)
+                                    renderDrawLine(pos1, pos2, pos3, pos4, 1, v439)
                                 end
                                 for v452 = 4, 5 do
                                     local v453, v454, v455 = getBodyPartCoordinates(v452 * 10 + 1, v434)
@@ -7119,7 +7129,7 @@ end
                                     local v456, v457 = convert3DCoordsToScreen(pos2X, pos2Y, pos2Z)
                                     pos4 = v457
                                     pos3 = v456
-                                    renderDrawLine(pos1, pos2, pos3, pos4, 2, v439)
+                                    renderDrawLine(pos1, pos2, pos3, pos4, 1, v439)
                                 end
                                 local v458 = {
                                     53,
@@ -7152,6 +7162,10 @@ end
                     break
                 end
                 if v468 ~= playerPed and isCharOnScreen(v468) then
+                    local myX, myY, myZ = getCharCoordinates(PLAYER_PED)
+                    local tX, tY, tZ = getCharCoordinates(v468)
+                    local isVisible = isLineOfSightClear(myX, myY, myZ, tX, tY, tZ, true, false, false, true, false)
+                    local boxColor = isVisible and 0xFF00FF00 or 0xFFFF0000
                     local v469 = {
                         getCharCoordinates(v468)
                     }
@@ -7161,66 +7175,66 @@ end
                     local v471 = {
                         convert3DCoordsToScreen(v469[1] + 0.3, v469[2] + 0.3, v469[3] - 1)
                     }
-                    renderDrawLine(v471[1], v471[2], v470[1], v470[2], 2, sampGetPlayerColor(select(2, sampGetPlayerIdByCharHandle(v468))))
+                    renderDrawLine(v471[1], v471[2], v470[1], v470[2], 1, boxColor)
                     local v472 = {
                         convert3DCoordsToScreen(v469[1] + 0.3, v469[2] + 0.3, v469[3] + 1)
                     }
-                    renderDrawLine(v471[1], v471[2], v472[1], v472[2], 2, sampGetPlayerColor(select(2, sampGetPlayerIdByCharHandle(v468))))
+                    renderDrawLine(v471[1], v471[2], v472[1], v472[2], 1, boxColor)
                     local v473 = {
                         convert3DCoordsToScreen(v469[1] + 0.3, v469[2] - 0.3, v469[3] + 1)
                     }
-                    renderDrawLine(v472[1], v472[2], v473[1], v473[2], 2, sampGetPlayerColor(select(2, sampGetPlayerIdByCharHandle(v468))))
+                    renderDrawLine(v472[1], v472[2], v473[1], v473[2], 1, boxColor)
                     local v474 = {
                         convert3DCoordsToScreen(v469[1] + 0.3, v469[2] - 0.3, v469[3] - 1)
                     }
-                    renderDrawLine(v473[1], v473[2], v474[1], v474[2], 2, sampGetPlayerColor(select(2, sampGetPlayerIdByCharHandle(v468))))
+                    renderDrawLine(v473[1], v473[2], v474[1], v474[2], 1, boxColor)
                     local v475 = {
                         convert3DCoordsToScreen(v469[1] - 0.3, v469[2] - 0.3, v469[3] - 1)
                     }
                     local v476 = {
                         convert3DCoordsToScreen(v469[1] + 0.3, v469[2] - 0.3, v469[3] - 1)
                     }
-                    renderDrawLine(v476[1], v476[2], v475[1], v475[2], 2, sampGetPlayerColor(select(2, sampGetPlayerIdByCharHandle(v468))))
+                    renderDrawLine(v476[1], v476[2], v475[1], v475[2], 1, boxColor)
                     local v477 = {
                         convert3DCoordsToScreen(v469[1] - 0.3, v469[2] + 0.3, v469[3] - 1)
                     }
                     local v478 = {
                         convert3DCoordsToScreen(v469[1] + 0.3, v469[2] + 0.3, v469[3] - 1)
                     }
-                    renderDrawLine(v477[1], v477[2], v478[1], v478[2], 2, sampGetPlayerColor(select(2, sampGetPlayerIdByCharHandle(v468))))
+                    renderDrawLine(v477[1], v477[2], v478[1], v478[2], 1, boxColor)
                     local v479 = {
                         convert3DCoordsToScreen(v469[1] - 0.3, v469[2] + 0.3, v469[3] + 1)
                     }
                     local v480 = {
                         convert3DCoordsToScreen(v469[1] + 0.3, v469[2] + 0.3, v469[3] + 1)
                     }
-                    renderDrawLine(v479[1], v479[2], v480[1], v480[2], 2, sampGetPlayerColor(select(2, sampGetPlayerIdByCharHandle(v468))))
+                    renderDrawLine(v479[1], v479[2], v480[1], v480[2], 1, boxColor)
                     local v481 = {
                         convert3DCoordsToScreen(v469[1] - 0.3, v469[2] - 0.3, v469[3] + 1)
                     }
                     local v482 = {
                         convert3DCoordsToScreen(v469[1] + 0.3, v469[2] - 0.3, v469[3] + 1)
                     }
-                    renderDrawLine(v481[1], v481[2], v482[1], v482[2], 2, sampGetPlayerColor(select(2, sampGetPlayerIdByCharHandle(v468))))
+                    renderDrawLine(v481[1], v481[2], v482[1], v482[2], 1, boxColor)
                     local v483 = {
                         convert3DCoordsToScreen(v469[1] - 0.3, v469[2] - 0.3, v469[3] - 1)
                     }
                     local v484 = {
                         convert3DCoordsToScreen(v469[1] - 0.3, v469[2] + 0.3, v469[3] - 1)
                     }
-                    renderDrawLine(v484[1], v484[2], v483[1], v483[2], 2, sampGetPlayerColor(select(2, sampGetPlayerIdByCharHandle(v468))))
+                    renderDrawLine(v484[1], v484[2], v483[1], v483[2], 1, boxColor)
                     local v485 = {
                         convert3DCoordsToScreen(v469[1] - 0.3, v469[2] + 0.3, v469[3] + 1)
                     }
-                    renderDrawLine(v484[1], v484[2], v485[1], v485[2], 2, sampGetPlayerColor(select(2, sampGetPlayerIdByCharHandle(v468))))
+                    renderDrawLine(v484[1], v484[2], v485[1], v485[2], 1, boxColor)
                     local v486 = {
                         convert3DCoordsToScreen(v469[1] - 0.3, v469[2] - 0.3, v469[3] + 1)
                     }
-                    renderDrawLine(v485[1], v485[2], v486[1], v486[2], 2, sampGetPlayerColor(select(2, sampGetPlayerIdByCharHandle(v468))))
+                    renderDrawLine(v485[1], v485[2], v486[1], v486[2], 1, boxColor)
                     local v487 = {
                         convert3DCoordsToScreen(v469[1] - 0.3, v469[2] - 0.3, v469[3] - 1)
                     }
-                    renderDrawLine(v486[1], v486[2], v487[1], v487[2], 2, sampGetPlayerColor(select(2, sampGetPlayerIdByCharHandle(v468))))
+                    renderDrawLine(v486[1], v486[2], v487[1], v487[2], 1, boxColor)
                 end
             end
         end
@@ -7228,6 +7242,15 @@ end
             local v488 = {
                 getCharCoordinates(playerPed)
             }
+            local sw, sh = getScreenResolution()
+            local startX, startY
+            if script.esp_line_origin.v == 0 then
+                startX, startY = sw / 2, 0
+            elseif script.esp_line_origin.v == 1 then
+                startX, startY = sw / 2, sh / 2
+            else
+                startX, startY = sw / 2, sh
+            end
             local v489, v490, v491 = ipairs(getAllChars())
             while true do
                 local v492
@@ -7240,10 +7263,11 @@ end
                     local v495 = {
                         getCharCoordinates(v492)
                     }
-                    local v496, v497, v498, _, _, _ = convert3DCoordsToScreenEx(v488[1], v488[2], v488[3], true, true)
+                    local isVisible = isLineOfSightClear(v488[1], v488[2], v488[3], v495[1], v495[2], v495[3], true, false, false, true, false)
+                    local lineColor = isVisible and 0xFF00FF00 or 0xFFFF0000
                     local v499, v500, v501, _, _, _ = convert3DCoordsToScreenEx(v495[1], v495[2], v495[3], true, true)
-                    if v496 and v499 then
-                        renderDrawLine(v497, v498, v500, v501, 1 == 0 and 1 or 2, sampGetPlayerColor(v494))
+                    if v499 then
+                        renderDrawLine(startX, startY, v500, v501, 1, lineColor)
                     end
                 end
             end
@@ -7802,7 +7826,7 @@ end
         elseif wasKeyPressed(vu12.VK_INSERT) then
             DrawTheMenu()
         end
-        vu200.Process = script.window.v or (script.iHUD.v or script.vHUD.v) or (script.cHUD.v or script.StaminaHUD.v or (script.sms_window.v or script.admin_panel.v))
+        vu200.Process = script.window.v or (script.iHUD.v or script.vHUD.v) or (script.cHUD.v or script.StaminaHUD.v or script.sms_window.v)
     end
     while isKeyDown(keys.quick_teleport1) and isKeyDown(keys.quick_teleport2) do
         wait(0)
