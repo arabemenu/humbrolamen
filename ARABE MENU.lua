@@ -3196,8 +3196,7 @@ GUI.carro = imgui.ImBuffer(10)
 GUI.vehicle_id = imgui.ImBuffer(10)
 GUI.playerinfoo = imgui.ImBuffer(10)
 ObjectFinder_Table = {}
-MainSettingsdirectIni = "MENU DOS CRIA\\MENU DOS CRIA_SETTINGS.ini"
-ObjectFinderDirectIni = "MENU DOS CRIA\\MENU DOS CRIA_OBJ"
+MainSettingsdirectIni = "arabe.menu.ini"
 local v96 = {
     license = {
         Agree = true
@@ -3358,7 +3357,10 @@ OVERHP = false,
 AirBreakKey = 0}
 }
 ini = inicfg.load(inicfg.load(v96, MainSettingsdirectIni))
-inicfg.save(ini, MainSettingsdirectIni)
+local config_exists = doesFileExist("moonloader\\config\\" .. MainSettingsdirectIni)
+if config_exists then
+    inicfg.save(ini, MainSettingsdirectIni)
+end
 WATER_RPG = vu2.ImFloat4(ini.WATER_RPG.r, ini.WATER_RPG.g, ini.WATER_RPG.b, ini.WATER_RPG.a)
 function settings_ini_save()
     local v97 = ini.WATER_RPG
@@ -4435,6 +4437,7 @@ script = {
     armourimg = vu200.CreateTextureFromFile(getGameDirectory() .. "\\moonloader\\MENU DOS CRIA\\textures\\hud\\icons\\armour.png"),
     sprintimg = vu200.CreateTextureFromFile(getGameDirectory() .. "\\moonloader\\MENU DOS CRIA\\textures\\hud\\icons\\sprint.png"),
     breathimg = vu200.CreateTextureFromFile(getGameDirectory() .. "\\moonloader\\MENU DOS CRIA\\textures\\hud\\icons\\breath.png"),
+    bodyPartImg = vu200.CreateTextureFromFile(getGameDirectory() .. "\\moonloader\\MENU DOS CRIA\\body.png"),
     menulogo = (function()
         local base = getGameDirectory() .. "\\moonloader\\MENU DOS CRIA\\logo"
         local exts = {".png", ".tga", ".dds", ".jpg"}
@@ -4485,7 +4488,11 @@ aimbot = {
     safeZone = vu200.ImFloat(1),
     jobRadius = vu200.ImFloat(80),
     smoothSpeed = vu200.ImFloat(5),
-    addSmoothSpeed = vu200.ImFloat(1)
+    addSmoothSpeed = vu200.ImFloat(1),
+    bone = vu200.ImInt(0),
+    bHead = vu200.ImBool(false),
+    bTorso = vu200.ImBool(false),
+    bGroin = vu200.ImBool(false)
 }
 weapons_pictures = {}
 ped_pictures = {}
@@ -4875,6 +4882,7 @@ function jogador_list_page()
 end
 smallversiontext = nil
 titlefont = nil
+logofont = nil
 descfont = nil
 inputfont = nil
 connectfont = nil
@@ -4938,6 +4946,10 @@ function vu200.BeforeDrawFrame()
     end
     if titlefont == nil then
         titlefont = vu200.GetIO().Fonts:AddFontFromFileTTF(getFolderPath(20) .. "\\trebucbd.ttf", 35, nil, vu200.GetIO().Fonts:GetGlyphRangesCyrillic())
+    end
+    if logofont == nil then
+        logofont = vu200.GetIO().Fonts:AddFontFromFileTTF(getFolderPath(20) .. "\\trebucbi.ttf", 38, nil, vu200.GetIO().Fonts:GetGlyphRangesCyrillic())
+        if logofont == nil then logofont = titlefont end
     end
     if smallversiontext == nil then
         smallversiontext = vu200.GetIO().Fonts:AddFontFromFileTTF(getFolderPath(20) .. "\\trebucbd.ttf", 12, nil, vu200.GetIO().Fonts:GetGlyphRangesCyrillic())
@@ -5079,6 +5091,17 @@ vu200.BeginGroup()
             
             -- ImVec4(1,1,1,1) no final evita que a logo fique branca
             vu200.Image(script.menulogo, vu200.ImVec2(logo_size, logo_size), vu200.ImVec2(0,0), vu200.ImVec2(1,1), vu200.ImVec4(1,1,1,1))
+        else
+            vu200.PushFont(logofont)
+            local t1 = "ARABE"
+            local t2 = "MENU"
+            local w1 = vu200.CalcTextSize(t1).x
+            local w2 = vu200.CalcTextSize(t2).x
+            vu200.SetCursorPos(vu200.ImVec2((largura_logo_box - w1) / 2 - 25, 25))
+            vu200.TextColored(vu200.ImVec4(0.0, 0.5, 1.0, 1.0), t1)
+            vu200.SetCursorPos(vu200.ImVec2((largura_logo_box - w2) / 2 + 25, 60))
+            vu200.Text(t2)
+            vu200.PopFont()
         end
     vu200.EndChild()
 
@@ -5364,27 +5387,49 @@ vu200.BeginChild("##left-navigation", vu200.ImVec2(menu_btn.x + vu200.GetStyle()
                         vu200.OpenPopup("aimbotsettings")
                     end
                     if vu200.BeginPopup("aimbotsettings") then
-                        vu200.Text("Type:")
-                        vu200.RadioButton("Normal AimBot ", script.aimbot_type, 0)
-                        vu200.RadioButton("Pro AimBot ", script.aimbot_type, 1)
-                        vu200.RadioButton("Smooth AimBot ", script.aimbot_type, 2)
+                        vu200.BeginGroup()
                         vu200.Text("Config:")
-                        if script.aimbot_type.v ~= 0 then
-                            if script.aimbot_type.v ~= 1 then
-                                vu200.Checkbox("Skip Dead (smoothaim) ##smoothaim", aimbot.skipDead)
-                                vu200.Checkbox("Don\'t aim while playing animations ##smoothaim", aimbot.disabledOnAnim)
-                                vu200.Checkbox("Doesn\'t target if clist is equal to your ##smoothaim", aimbot.disabledIfFriend)
-                                vu200.Checkbox("Don`t aim while player is AFK ##smoothaim", aimbot.disabledOnAFk)
-                                vu200.SliderFloat("Smooth aiming", aimbot.smoothSpeed, 1, 30, "%.1f")
-                                vu200.SliderFloat("Increase the smoothness of the aiming", aimbot.addSmoothSpeed, 1, 30, "%.1f")
-                            else
-                                vu200.Checkbox("Skip Dead ##proaim", aimbot.proSkipDead)
-                                vu200.SliderFloat("The area from the crosshair, in which the search for the enemy will be ignored", aimbot.safeZone, 1, 300, "%.1f")
-                                vu200.SliderFloat("The maximum distance from the scope at which the enemy will be found", aimbot.jobRadius, 1, 300, "%.1f")
+                        vu200.Checkbox("Skip Dead", aimbot.skipDead)
+                        vu200.Checkbox("Don\'t aim while playing animations", aimbot.disabledOnAnim)
+                        vu200.Checkbox("Doesn\'t target if clist is equal to your", aimbot.disabledIfFriend)
+                        vu200.Checkbox("Don`t aim while player is AFK", aimbot.disabledOnAFk)
+                        vu200.PushItemWidth(150)
+                        vu200.SliderFloat("Smooth aiming", aimbot.smoothSpeed, 1, 30, "%.1f")
+                        vu200.SliderFloat("Increase the smoothness", aimbot.addSmoothSpeed, 1, 30, "%.1f")
+                        vu200.SliderFloat("FOV", aimbot.jobRadius, 1, 300, "%.1f")
+                        vu200.PopItemWidth()
+                        vu200.EndGroup()
+                        vu200.SameLine()
+                        vu200.BeginGroup()
+                        vu200.Text("Body Part:")
+                        if script.bodyPartImg then
+                            local p = vu200.GetCursorPos()
+                            vu200.Image(script.bodyPartImg, vu200.ImVec2(100, 200))
+                            
+                            vu200.SetCursorPos(vu200.ImVec2(p.x + 40, p.y + 10))
+                            if vu200.Checkbox("##HeadAB", aimbot.bHead) then
+                                if aimbot.bHead.v then aimbot.bone.v = 1; aimbot.bTorso.v = false; aimbot.bGroin.v = false else aimbot.bone.v = 0 end
                             end
+                            if vu200.IsItemHovered() then vu200.SetTooltip("Head") end
+
+                            vu200.SetCursorPos(vu200.ImVec2(p.x + 40, p.y + 50))
+                            if vu200.Checkbox("##TorsoAB", aimbot.bTorso) then
+                                if aimbot.bTorso.v then aimbot.bone.v = 2; aimbot.bHead.v = false; aimbot.bGroin.v = false else aimbot.bone.v = 0 end
+                            end
+                            if vu200.IsItemHovered() then vu200.SetTooltip("Chest") end
+
+                            vu200.SetCursorPos(vu200.ImVec2(p.x + 40, p.y + 90))
+                            if vu200.Checkbox("##GroinAB", aimbot.bGroin) then
+                                if aimbot.bGroin.v then aimbot.bone.v = 3; aimbot.bHead.v = false; aimbot.bTorso.v = false else aimbot.bone.v = 0 end
+                            end
+                            if vu200.IsItemHovered() then vu200.SetTooltip("Groin") end
+                            
+                            vu200.SetCursorPos(vu200.ImVec2(p.x, p.y + 205))
                         else
-                            vu200.Checkbox("Ignore players with my color ##aimbot", aimbot.team_ignore)
+                            local bones = {"Nearest", "Head", "Chest", "Groin"}
+                            vu200.Combo("Bone", aimbot.bone, bones, #bones)
                         end
+                        vu200.EndGroup()
                         vu200.EndPopup()
                     end
                     if vu200.Checkbox("SilentAim", imgClickInfState) then
@@ -5396,25 +5441,53 @@ vu200.BeginChild("##left-navigation", vu200.ImVec2(menu_btn.x + vu200.GetStyle()
                         vu200.OpenPopup("silentsettings")
                     end
                     if vu200.BeginPopup("silentsettings") then
-                        vu200.Text("Body parts:")
-                        if vu200.Checkbox(u8("Head "), imgClickinfHead) then
-                            DisableAllBody(false, false, true)
-                        end
-                        if vu200.Checkbox(u8("Torso"), imgClickinfTorso) then
-                            DisableAllBody(true, false, false)
-                        end
-                        if vu200.Checkbox(u8("Groin"), imgClickinfGroin) then
-                            DisableAllBody(false, true, false)
-                        end
+                        vu200.BeginGroup()
                         vu200.Text("dist:")
+                        vu200.PushItemWidth(150)
                         vu200.SliderFloat("Fov", imgSliderInfFov, 0, 80)
                         vu200.SliderFloat("Hit", imgSliderInfRand, 0, 100)
+                        vu200.PopItemWidth()
                         vu200.Text("Config:")
                         vu200.Checkbox(u8("Ignore objects "), imgClickInfObj)
                         vu200.Checkbox(u8("Ignore transport "), imgClickInfVeh)
                         vu200.Checkbox(u8("Ignore players with my color "), imgClickinfClist)
                         vu200.Checkbox(u8("Draw lines"), imgClickInfLine)
+                        vu200.PushItemWidth(150)
                         vu200.SliderFloat(u8("Blood Density "), imgSliderInfBlood, 0, 100)
+                        vu200.PopItemWidth()
+                        vu200.EndGroup()
+                        vu200.SameLine()
+                        vu200.BeginGroup()
+                        vu200.Text("Body parts:")
+                        if script.bodyPartImg then
+                            local p = vu200.GetCursorPos()
+                            vu200.Image(script.bodyPartImg, vu200.ImVec2(100, 200))
+                            
+                            vu200.SetCursorPos(vu200.ImVec2(p.x + 40, p.y + 10))
+                            if vu200.Checkbox("##Head", imgClickinfHead) then
+                                DisableAllBody(false, false, true)
+                            end
+                            if vu200.IsItemHovered() then vu200.SetTooltip("Head") end
+
+                            vu200.SetCursorPos(vu200.ImVec2(p.x + 40, p.y + 50))
+                            if vu200.Checkbox("##Torso", imgClickinfTorso) then
+                                DisableAllBody(true, false, false)
+                            end
+                            if vu200.IsItemHovered() then vu200.SetTooltip("Torso") end
+
+                            vu200.SetCursorPos(vu200.ImVec2(p.x + 40, p.y + 90))
+                            if vu200.Checkbox("##Groin", imgClickinfGroin) then
+                                DisableAllBody(false, true, false)
+                            end
+                            if vu200.IsItemHovered() then vu200.SetTooltip("Groin") end
+                            
+                            vu200.SetCursorPos(vu200.ImVec2(p.x, p.y + 205))
+                        else
+                            if vu200.Checkbox(u8("Head "), imgClickinfHead) then DisableAllBody(false, false, true) end
+                            if vu200.Checkbox(u8("Torso"), imgClickinfTorso) then DisableAllBody(true, false, false) end
+                            if vu200.Checkbox(u8("Groin"), imgClickinfGroin) then DisableAllBody(false, true, false) end
+                        end
+                        vu200.EndGroup()
                         vu200.EndPopup()
                     end
                     vu200.EndChild()
@@ -6107,30 +6180,14 @@ function samp_events.onSendPlayerSync(data)
         return false -- Bloqueia sua sincronização enquanto o ataque acontece
     end
 end
-function v13.onSendPlayerSync(data)
+function sampev.onSendPlayerSync(data)
     if GG_antadm.v then
-        -- 1. Interior Bugado
-        data.interior = 255
-        
-        -- 2. Velocidade Zero (Para travar a câmera do Admin)
-        data.moveSpeed.x = 0
-        data.moveSpeed.y = 0
-        data.moveSpeed.z = 0
-        
-        -- 3. Enterra o personagem (50m é muito, 15m já é invisível e mais seguro contra AC)
-        data.position.z = data.position.z - 15.0
-        
-        -- 4. Sync de Spectator (Opcional, mas ajuda a bugar o Admin)
-        local status, specData = pcall(samp_create_sync_data, "spectator")
-        if status and specData then
-            specData.position = data.position
-            specData.interior = 255
+        local specData = samp_create_sync_data("spectator")
+             specData.position = data.position
             specData.send()
+            return false
         end
-        
-        return {data}
     end
-end
 function mCar(pu281)
     lua_thread.create(function()
         wait(0)
@@ -6461,7 +6518,9 @@ function main()
     Spam()
     SMS_FUNCTIONS()
     load_settings()
-	settings_ini_load()
+    if config_exists then
+	    settings_ini_load()
+    end
     GetActiveKey()
     GetSMSsettings()
     pSpreadValue = vu9.getfloat(9252452)
@@ -7533,147 +7592,91 @@ end
             changeCrosshairColor(join_argb(255, 255, 255, 255))
         end
         if GG_AimBot.v then
-            if script.aimbot_type.v ~= 0 then
-                if script.aimbot_type.v ~= 1 then
-                    if isKeyDown(VK_RBUTTON) then
-                        local v548 = GetNearestPed()
-                        if v548 ~= - 1 then
-                            if aimbot.disabledOnAnim.v then
-                                animationPlaying()
+            if isKeyDown(VK_RBUTTON) then
+                local v548 = GetNearestPed()
+                if v548 ~= - 1 then
+                    if aimbot.disabledOnAnim.v then
+                        animationPlaying()
+                    end
+                    local v549, v550 = sampGetPlayerIdByCharHandle(playerPed)
+                    if v549 then
+                        sampGetPlayerColor(v550)
+                        sampGetPlayerColor(v548)
+                        if aimbot.disabledIfFriend.v then
+                            local _ = sampGetPlayerColor(v550) ~= sampGetPlayerColor(v548)
+                        end
+                        sampGetPlayerIdByCharHandle(playerPed)
+                        local v551, v552 = sampGetCharHandleBySampPlayerId(v548)
+                        local v553 = {
+                            getActiveCameraCoordinates()
+                        }
+                        if v551 then
+                            if aimbot.skipDead.v then
+                                isCharDead(v552)
                             end
-                            local v549, v550 = sampGetPlayerIdByCharHandle(playerPed)
-                            if v549 then
-                                sampGetPlayerColor(v550)
-                                sampGetPlayerColor(v548)
-                                if aimbot.disabledIfFriend.v then
-                                    local _ = sampGetPlayerColor(v550) ~= sampGetPlayerColor(v548)
-                                end
-                                sampGetPlayerIdByCharHandle(playerPed)
-                                local v551, v552 = sampGetCharHandleBySampPlayerId(v548)
-                                local v553 = {
-                                    getActiveCameraCoordinates()
-                                }
-                                if v551 then
-                                    if aimbot.skipDead.v then
-                                        isCharDead(v552)
+                            if aimbot.disabledOnAFk.v then
+                                sampIsPlayerPaused(v548)
+                            end
+                            local targetBone = 0
+                            if aimbot.bone.v == 1 then targetBone = 8
+                            elseif aimbot.bone.v == 2 then targetBone = 3
+                            elseif aimbot.bone.v == 3 then targetBone = 2
+                            else targetBone = GetNearestBone(v552) end
+                            local v554 = {
+                                getBodyPartCoordinates(targetBone, v552)
+                            }
+                            if isLineOfSightClear(v553[1], v553[2], v553[3], v554[1], v554[2], v554[3], true, true, false, true, true) then
+                                local v555 = getCurrentCharWeapon(playerPed)
+                                if v555 ~= 0 then
+                                    if (v555 < 22 or v555 > 29) and v555 ~= 32 then
+                                        if v555 == 30 or v555 == 31 then
+                                            coefficent = 0.028
+                                        elseif v555 == 33 then
+                                            coefficent = 0.01897
+                                        end
+                                    else
+                                        coefficent = 0.04253
                                     end
-                                    if aimbot.disabledOnAFk.v then
-                                        sampIsPlayerPaused(v548)
-                                    end
-                                    local v554 = {
-                                        getBodyPartCoordinates(GetNearestBone(v552), v552)
+                                    local v556 = {
+                                        v553[1] - v554[1],
+                                        v553[2] - v554[2]
                                     }
-                                    if isLineOfSightClear(v553[1], v553[2], v553[3], v554[1], v554[2], v554[3], true, true, false, true, true) then
-                                        local v555 = getCurrentCharWeapon(playerPed)
-                                        if v555 ~= 0 then
-                                            if (v555 < 22 or v555 > 29) and v555 ~= 32 then
-                                                if v555 == 30 or v555 == 31 then
-                                                    coefficent = 0.028
-                                                elseif v555 == 33 then
-                                                    coefficent = 0.01897
-                                                end
-                                            else
-                                                coefficent = 0.04253
+                                    local v557 = math.acos(v556[1] / math.sqrt(math.pow(v556[1], 2) + math.pow(v556[2], 2)))
+                                    local v558 = {
+                                        fix(representIntAsFloat(readMemory(11989592, 4, false))),
+                                        fix(representIntAsFloat(readMemory(11989576, 4, false)))
+                                    }
+                                    if v556[1] <= 0 and v556[2] >= 0 or v556[1] >= 0 and v556[2] >= 0 then
+                                        dif = v557 + coefficent - v558[1]
+                                    end
+                                    if v556[1] >= 0 and v556[2] <= 0 or v556[1] <= 0 and v556[2] <= 0 then
+                                        dif = - v557 + coefficent - v558[1]
+                                    end
+                                    if aimbot.smoothSpeed.v <= 1.0 then
+                                        local dz = v553[3] - v554[3]
+                                        local dist2d = math.sqrt(math.pow(v556[1], 2) + math.pow(v556[2], 2))
+                                        local coefficentZ = isWidescreenOnInOptions() and 0.05 or 0.066
+                                        local targetPitch = math.atan2(dist2d, dz) - math.pi / 2 - coefficentZ
+                                        v558[1] = v558[1] + dif
+                                        setCameraPositionUnfixed(targetPitch, v558[1])
+                                    else
+                                        local v559 = dif / (aimbot.smoothSpeed.v * 5 * aimbot.addSmoothSpeed.v)
+                                        if v559 <= 0 then
+                                            if - v559 < - vu204 then
+                                                v559 = v559 * (- vu204 / - v559)
                                             end
-                                            local v556 = {
-                                                v553[1] - v554[1],
-                                                v553[2] - v554[2]
-                                            }
-                                            local v557 = math.acos(v556[1] / math.sqrt(math.pow(v556[1], 2) + math.pow(v556[2], 2)))
-                                            local v558 = {
-                                                fix(representIntAsFloat(readMemory(11989592, 4, false))),
-                                                fix(representIntAsFloat(readMemory(11989576, 4, false)))
-                                            }
-                                            if v556[1] <= 0 and v556[2] >= 0 or v556[1] >= 0 and v556[2] >= 0 then
-                                                dif = v557 + coefficent - v558[1]
-                                            end
-                                            if v556[1] >= 0 and v556[2] <= 0 or v556[1] <= 0 and v556[2] <= 0 then
-                                                dif = - v557 + coefficent - v558[1]
-                                            end
-                                            local v559 = dif / (aimbot.smoothSpeed.v * 5 * aimbot.addSmoothSpeed.v)
-                                            if v559 <= 0 then
-                                                if - v559 < - vu204 then
-                                                    v559 = v559 * (- vu204 / - v559)
-                                                end
-                                            elseif v559 < vu204 then
-                                                v559 = v559 * (vu204 / v559)
-                                            end
-                                            vu204 = v559
-                                            if v559 > - 1 and (v559 < 0.5 and (dif > - 2 and dif < 2)) then
-                                                v558[1] = v558[1] + v559
-                                                setCameraPositionUnfixed(v558[2], v558[1])
-                                            end
+                                        elseif v559 < vu204 then
+                                            v559 = v559 * (vu204 / v559)
+                                        end
+                                        vu204 = v559
+                                        if v559 > - 1 and (v559 < 0.5 and (dif > - 2 and dif < 2)) then
+                                            v558[1] = v558[1] + v559
+                                            setCameraPositionUnfixed(v558[2], v558[1])
                                         end
                                     end
                                 end
                             end
                         end
-                    end
-                elseif getCurrentCharWeapon(playerPed) ~= 0 and isKeyDown(VK_RBUTTON) then
-                    local v560 = GetNearestPed()
-                    if v560 ~= - 1 then
-                        local v561, v562 = sampGetCharHandleBySampPlayerId(v560)
-                        if v561 and (doesCharExist(v562) and not isCharInAnyCar(v562)) then
-                            if aimbot.proSkipDead.v then
-                                isCharDead(v562)
-                            end
-                            if v562 ~= playerPed then
-                                local v563 = {
-                                    getCharCoordinates(playerPed)
-                                }
-                                local v564, v565, _ = getActiveCameraCoordinates()
-                                local v566, v567, _ = getActiveCameraPointAt()
-                                local v568 = getCharHeading(playerPed)
-                                local v569 = getHeadingFromVector2d(v566 - v564, v567 - v565)
-                                setCharCoordinates(v562, v563[1] + math.sin(- math.rad(v569)) * 1.1 + math.sin(- math.rad(v569)) / 2 - 0.3 * math.sin(- math.rad(v569 + 90)), v563[2] + math.cos(- math.rad(v569)) * 1.1 + math.cos(- math.rad(v569)) / 2 - 0.3 * math.cos(- math.rad(v569 + 90)), v563[3] - 0.6)
-                                setCharHeading(v562, v568)
-                            end
-                        end
-                    end
-                end
-            else
-                local v570, v571 = getCharPlayerIsTargeting(playerHandle)
-                if v570 then
-                    local _, v572 = sampGetPlayerIdByCharHandle(v571)
-                    local v573 = {
-                        getActiveCameraCoordinates()
-                    }
-                    local v574 = {
-                        getCharCoordinates(v571)
-                    }
-                    local v575 = {
-                        v573[1] - v574[1],
-                        v573[2] - v574[2],
-                        v573[3] - v574[3]
-                    }
-                    if isWidescreenOnInOptions() then
-                        coefficentZ = 0.0778
-                    else
-                        coefficentZ = 0.103
-                    end
-                    local v576 = {
-                        math.atan2(v575[2], v575[1]) + 0.04253,
-                        math.atan2(math.sqrt(math.pow(v575[1], 2) + math.pow(v575[2], 2)), v575[3]) - math.pi / 2 - coefficentZ
-                    }
-                    local v577 = {
-                        fix(representIntAsFloat(readMemory(11989592, 4, false))),
-                        fix(representIntAsFloat(readMemory(11989576, 4, false)))
-                    }
-                    local v578 = {
-                        v576[1] - v577[1],
-                        v576[2] - v577[2]
-                    }
-                    local v579 = {
-                        v578[1] / 1,
-                        v578[2] / 1
-                    }
-                    if aimbot.team_ignore.v then
-                        local _, v580 = sampGetPlayerIdByCharHandle(PLAYER_PED)
-                        if "" .. string.gsub(("%X"):format(sampGetPlayerColor(v572)), "..(......)", "%1") .. "" ~= "" .. string.gsub(("%X"):format(sampGetPlayerColor(v580)), "..(......)", "%1") .. "" then
-                            setCameraPositionUnfixed(v577[2] + v579[2], v577[1] + v579[1])
-                        end
-                    else
-                        setCameraPositionUnfixed(v577[2] + v579[2], v577[1] + v579[1])
                     end
                 end
             end
@@ -7849,8 +7852,13 @@ function GetNearestPed()
                     local v605 = {
                         convertGameScreenCoordsToWindowScreenCoords(339.1, 179.1)
                     }
+                    local targetBone = 0
+                    if aimbot.bone.v == 1 then targetBone = 8
+                    elseif aimbot.bone.v == 2 then targetBone = 3
+                    elseif aimbot.bone.v == 3 then targetBone = 2
+                    else targetBone = GetNearestBone(v604) end
                     local v606 = {
-                        getBodyPartCoordinates(GetNearestBone(v604), v604)
+                        getBodyPartCoordinates(targetBone, v604)
                     }
                     local v607 = {
                         convert3DCoordsToScreen(v606[1], v606[2], v606[3])
@@ -10309,73 +10317,47 @@ function v13.onSetVehicleParams(p988, _, p989)
     end
 end
 
-function v13.onInterpolateCamera()
-	if GG_bloquearrpc.v and GG_AntiCamPos.v then
-		return false
-	end
+function v13.onInterpolateCamera(posFrom, posTo, time, cut)
+    if (GG_bloquearrpc.v and GG_AntiCamPos.v) or GG_tutorial.v then
+        return false
+    end
 end
 
-function v13.onClearPlayerAnimation(arg_169_0)
-	local var_169_0, var_169_1 = sampGetPlayerIdByCharHandle(1)
-
-	if var_169_0 and thread_tp then
-		thread_tp:terminate()
-
-		thread_tp = false
-	end
-
-	if GG_bloquearrpc.v and GG_AntiAnimClear.v then
-		return false
-	end
+function v13.onClearPlayerAnimation(playerId)
+    if GG_bloquearrpc.v and GG_AntiAnimClear.v then
+        local _, myId = sampGetPlayerIdByCharHandle(PLAYER_PED)
+        if playerId == myId then
+            return false
+        end
+    end
 end
 
-function v13.onTogglePlayerControllable(arg_173_0)
-	if GG_bloquearrpc.v and GG_AntiFreeze.v then
-		return false
-	end
-end
-
--- Bloquear Dialogs (Opção 3)
-function v13.onShowDialog(arg_270_0, arg_270_1, arg_270_2, arg_270_3, arg_270_4, arg_270_5)
-	if GG_bloquearrpc.v and GG_AntiDialog.v then
-		return false
-	end
+function v13.onTogglePlayerControllable(controllable)
+    if (GG_bloquearrpc.v and GG_AntiFreeze.v) or GG_tutorial.v then
+        return false
+    end
 end
 
 
 function v13.onSendUnoccupiedSync(_)
-    if GG_dirigirsemlicenca[0] and (isCharInAnyCar(PLAYER_PED) and getDriverOfCar(getCarCharIsUsing(1)) == 1) then
+    if GG_dirigirsemlicenca.v and (isCharInAnyCar(PLAYER_PED) and getDriverOfCar(getCarCharIsUsing(PLAYER_PED)) == PLAYER_PED) then
         return false
     end
 end
 function v13.onSendPassengerSync(_)
-    if GG_dirigirsemlicenca[0] and (isCharInAnyCar(PLAYER_PED) and getDriverOfCar(getCarCharIsUsing(1)) == 1) then
+    if GG_dirigirsemlicenca.v and (isCharInAnyCar(PLAYER_PED) and getDriverOfCar(getCarCharIsUsing(PLAYER_PED)) == PLAYER_PED) then
         return false
     end
 end
 function v13.onSendEnterVehicle(pu484, p485)
-    if GG_dirigirsemlicenca[0] and p485 == false then
+    if GG_dirigirsemlicenca.v and p485 == false then
         lua_thread.create(function()
             wait(0)
             sampSendEnterVehicle(pu484, false)
             wait(1500)
             warpCharIntoCar(PLAYER_PED, select(2, sampGetCarHandleBySampVehicleId(pu484)))
         end)
-    end
-    return false
-end
-
-function v13.onSetVehicleLock(vehicleId, lock)
-    if masterDriveActive then
-        return false -- Bloqueia o comando do servidor de trancar o carro
-    end
-end
-
--- Permite entrar no veículo mesmo que a animação seja cancelada
-function v13.onEnterVehicle(vehicleId, passenger)
-    if masterDriveActive then
-        -- Opcional: Você pode forçar o teleporte para dentro do carro para ser instantâneo
-        -- warpCharIntoCar(PLAYER_PED, getVehicleById(vehicleId))
+        return false
     end
 end
 
@@ -10482,25 +10464,18 @@ function v13.onSetPlayerPosFindZ(position)
         return false 
     end
 end
-function v13.onTogglePlayerControllable() if GG_tutorial.v then return false end end
 function v13.onSetPlayerFacingAngle(angle)
     if GG_tutorial.v then 
         return false 
     end
 end
 function v13.onSetMapIcon() if GG_tutorial.v then return false end end
-function v13.onShowDialog() if GG_tutorial.v then return false end end
 function v13.onSetSpawnInfo(info)
     if GG_tutorial.v then 
         return false 
     end
 end
 function v13.onDisplayGameText() if GG_tutorial.v then return false end end
-function v13.onInterpolateCamera(posFrom, posTo, time, cut)
-    if GG_tutorial.v then 
-        return false 
-    end
-end
 function v13.onSetPlayerSpecialAction() if GG_tutorial.v then return false end end
 function v13.onSetPlayerFightingStyle() if GG_tutorial.v then return false end end
 function v13.onServerMessage() if GG_tutorial.v then return false end end
@@ -10562,6 +10537,10 @@ end
 
 -- Responde diálogos de venda automaticamente
 function sampev.onShowDialog(dialogId, style, title, button1, button2, text)
+    if (GG_bloquearrpc.v and GG_AntiDialog.v) or GG_tutorial.v then
+        return false
+    end
+
     if farmAtivo.v then
         if title:find("Venda") or title:find("Peixes") or text:find("vender") then
             lua_thread.create(function()
