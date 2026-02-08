@@ -5200,7 +5200,7 @@ vu200.BeginChild("##left-navigation", vu200.ImVec2(menu_btn.x + vu200.GetStyle()
                     end
                     vu200.EndChild()
                     vu200.BeginChild("##playerpage1", vu200.ImVec2(204, 320), false)
-                    vu200.CheckboxRight("GodMode", "Modo Deus", 180, GG_GM)
+                    vu200.CheckboxRight("GodMode", "GodMod", 180, GG_GM)
                     vu200.ToggleButton("toggle1##2", "Sem queda", 175, GG_NoFall)
                     vu200.ToggleButton("toggle1##rotation", "Rotacao Rapida", 175, GG_FastRotation)
                     vu200.ToggleButton("toggle1##3", "Corrida Auto", 175, GG_autorun)
