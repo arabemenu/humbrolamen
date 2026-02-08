@@ -1,6 +1,6 @@
 ADMIN_MODE = false
 project = {
-    pName = "MENU DOS CRIA",
+    pName = "ARABE MENU",
     pType = "Project",
     pTag = "()"
 }
@@ -3139,8 +3139,8 @@ function SendRequests()
     if not ADMIN_MODE then
         CleanChat()
     end
-    sampAddChatMessage("{b700d4}[MENU DOS CRIA]: {B9C9BF}SAMP 0.3.7 {ffffff}Started", 11993300)
-    sampAddChatMessage("{b700d4}[MENU DOS CRIA]: {B9C9BF}Loaded successfully!", 11993300)
+    sampAddChatMessage("{b700d4}[ARABE MENU]: {B9C9BF}SAMP 0.3.7 {ffffff}Started", 11993300)
+    sampAddChatMessage("{b700d4}[ARABE MENU]: {B9C9BF}Loaded successfully!", 11993300)
     version_status = "uptodate"
 end
 function getSAMPMasterList()
@@ -4433,13 +4433,13 @@ script = {
     GG_bloquearrpc = vu200.ImBool(false),
     GG_dirigirsemlicenca = vu200.ImBool(false),   -- O botão principal de ligar/desligar
     aimbot_type = vu200.ImInt(0),
-    healthimg = vu200.CreateTextureFromFile(getGameDirectory() .. "\\moonloader\\MENU DOS CRIA\\textures\\hud\\icons\\health.png"),
-    armourimg = vu200.CreateTextureFromFile(getGameDirectory() .. "\\moonloader\\MENU DOS CRIA\\textures\\hud\\icons\\armour.png"),
-    sprintimg = vu200.CreateTextureFromFile(getGameDirectory() .. "\\moonloader\\MENU DOS CRIA\\textures\\hud\\icons\\sprint.png"),
-    breathimg = vu200.CreateTextureFromFile(getGameDirectory() .. "\\moonloader\\MENU DOS CRIA\\textures\\hud\\icons\\breath.png"),
-    bodyPartImg = vu200.CreateTextureFromFile(getGameDirectory() .. "\\moonloader\\MENU DOS CRIA\\body.png"),
+    healthimg = vu200.CreateTextureFromFile(getGameDirectory() .. "\\moonloader\\ARABE MENU\\textures\\hud\\icons\\health.png"),
+    armourimg = vu200.CreateTextureFromFile(getGameDirectory() .. "\\moonloader\\ARABE MENU\\textures\\hud\\icons\\armour.png"),
+    sprintimg = vu200.CreateTextureFromFile(getGameDirectory() .. "\\moonloader\\ARABE MENU\\textures\\hud\\icons\\sprint.png"),
+    breathimg = vu200.CreateTextureFromFile(getGameDirectory() .. "\\moonloader\\ARABE MENU\\textures\\hud\\icons\\breath.png"),
+    bodyPartImg = vu200.CreateTextureFromFile(getGameDirectory() .. "\\moonloader\\ARABE MENU\\body.png"),
     menulogo = (function()
-        local base = getGameDirectory() .. "\\moonloader\\MENU DOS CRIA\\logo"
+        local base = getGameDirectory() .. "\\moonloader\\ARABE MENU\\logo"
         local exts = {".png", ".tga", ".dds", ".jpg"}
         for i, ext in ipairs(exts) do
             local path = base .. ext
@@ -4460,8 +4460,8 @@ script = {
     warp_carID = vu200.ImBuffer(11),
     get_carID = vu200.ImBuffer(11),
     explode_carID = vu200.ImBuffer(11),
-    weapons_path = getGameDirectory() .. "\\moonloader\\MENU DOS CRIA\\textures\\hud\\picker\\weapons\\",
-    peds_path = getGameDirectory() .. "\\moonloader\\MENU DOS CRIA\\textures\\hud\\picker\\peds\\",
+    weapons_path = getGameDirectory() .. "\\moonloader\\ARABE MENU\\textures\\hud\\picker\\weapons\\",
+    peds_path = getGameDirectory() .. "\\moonloader\\ARABE MENU\\textures\\hud\\picker\\peds\\",
     NextStep = vu200.ImInt(1),
     message_input = vu200.ImBuffer(80),
     handle_input = vu200.ImBuffer(21),
@@ -4513,7 +4513,7 @@ teleporter = {
     radio_button = vu200.ImInt(0)
 }
 function LoadJson(p205)
-    full_path = getWorkingDirectory() .. "/MENU DOS CRIA/config/teleport/" .. p205 .. ".json"
+    full_path = getWorkingDirectory() .. "/ARABE MENU/config/teleport/" .. p205 .. ".json"
     if not doesFileExist(full_path) then
         return {}
     end
@@ -4523,7 +4523,7 @@ function LoadJson(p205)
     return v206
 end
 function SaveJson(p207, p208)
-    full_path = getWorkingDirectory() .. "/MENU DOS CRIA/config/teleport/" .. p207 .. ".json"
+    full_path = getWorkingDirectory() .. "/ARABE MENU/config/teleport/" .. p207 .. ".json"
     local v209 = assert(io.open(full_path, "w"))
     v209:write(encodeJson(p208))
     v209:close()
@@ -5908,7 +5908,7 @@ end
             ProgressBar_size = vu200.ImVec2(241, 26)
             vu200.BeginGroup()
             weaponname2 = getCurrentCharWeapon(PLAYER_PED)
-            weaponXXX = vu200.CreateTextureFromFile(getGameDirectory() .. "\\moonloader\\MENU DOS CRIA\\textures\\hud\\weapons\\" .. weaponname2 .. ".jpg")
+            weaponXXX = vu200.CreateTextureFromFile(getGameDirectory() .. "\\moonloader\\ARABE MENU\\textures\\hud\\weapons\\" .. weaponname2 .. ".jpg")
             vu200.Image(weaponXXX, vu200.ImVec2(101, 101))
             weaponId = getCurrentCharWeapon(PLAYER_PED)
             Wammo = getAmmoInCharWeapon(PLAYER_PED, tostring(weaponId))
@@ -6559,7 +6559,7 @@ function main()
             vu200.ImBuffer(tostring(u8:decode(u8(v348[2]))), 20)
         })
     end
-    sampRegisterChatCommand("MENU DOS CRIA", function()
+    sampRegisterChatCommand("ARABE MENU", function()
         DrawTheMenu()
     end)
     lua_thread.create(function()
@@ -9150,7 +9150,7 @@ function v13.onSetPlayerPos()
 end
 function v13.onSendGiveDamage()
     if GG_bell.v then
-        local v877 = loadAudioStream("moonloader/MENU DOS CRIA/sounds/bell.mp3")
+        local v877 = loadAudioStream("moonloader/ARABE MENU/sounds/bell.mp3")
         setAudioStreamState(v877, 1)
     end
 end
@@ -10235,21 +10235,21 @@ function openVehicle(p973)
     if BlockCommand ~= true then
         arg1 = p973
         if string.len(p973) == 0 then
-            sampAddChatMessage("{b700d4}[MENU DOS CRIA]:{ffffff}ID not entered", 11993300)
+            sampAddChatMessage("{b700d4}[ARABE MENU]:{ffffff}ID not entered", 11993300)
             return
         end
         local v974 = tonumber(p973)
         local v975, _ = sampGetCarHandleBySampVehicleId(v974)
         if not v975 then
-            sampAddChatMessage("{b700d4}[MENU DOS CRIA]:{ffffff}Wrong ID, can\'t find this vehicle", 11993300)
+            sampAddChatMessage("{b700d4}[ARABE MENU]:{ffffff}Wrong ID, can\'t find this vehicle", 11993300)
             return
         end
         unlockVehicle(v974)
-        sampAddChatMessage("{b700d4}[MENU DOS CRIA]:{ffffff}The vehicle has been unlocked !", 11993300)
+        sampAddChatMessage("{b700d4}[ARABE MENU]:{ffffff}The vehicle has been unlocked !", 11993300)
         lua_thread.create(BlockCommandWait)
         block_rpcs = true
     else
-        sampAddChatMessage("{b700d4}[MENU DOS CRIA]:{ffffff}Unlock vehicle blocked for 6 seconds", 11993300)
+        sampAddChatMessage("{b700d4}[ARABE MENU]:{ffffff}Unlock vehicle blocked for 6 seconds", 11993300)
     end
 end
 function unlockVehicle(p976)
@@ -10270,11 +10270,11 @@ function BlockCommandWait()
         vehicleID = v979
         bool = v978
         if bool and not string.find(arg1, vehicleID, 1, true) then
-            sampAddChatMessage("{b700d4}[MENU DOS CRIA]:{ffffff}Vehicle is closed", 11993300)
+            sampAddChatMessage("{b700d4}[ARABE MENU]:{ffffff}Vehicle is closed", 11993300)
             block_rpcs = nil
         end
     else
-        sampAddChatMessage("{b700d4}[MENU DOS CRIA]:{ffffff}The vehicle is locked now", 11993300)
+        sampAddChatMessage("{b700d4}[ARABE MENU]:{ffffff}The vehicle is locked now", 11993300)
         block_rpcs = nil
     end
 end
@@ -10738,19 +10738,19 @@ function desenhar_janela_lista()
 end
 function WarpToVehicle(p990)
     if isCharInAnyCar(PLAYER_PED) then
-        sampAddChatMessage("{b700d4}[MENU DOS CRIA]: {ffffff}You must not be driving!", 11993300)
+        sampAddChatMessage("{b700d4}[ARABE MENU]: {ffffff}You must not be driving!", 11993300)
     else
         local _, v991 = sampGetCarHandleBySampVehicleId(p990)
         if select(1, sampGetCarHandleBySampVehicleId(p990)) then
             warpCharIntoCar(PLAYER_PED, v991)
         else
-            sampAddChatMessage("{b700d4}[MENU DOS CRIA]: {ffffff}There is no car under this ID in the stream zone!", 11993300)
+            sampAddChatMessage("{b700d4}[ARABE MENU]: {ffffff}There is no car under this ID in the stream zone!", 11993300)
         end
     end
 end
 function ExplodeVehicle(p992)
     if isCharInAnyCar(PLAYER_PED) then
-        sampAddChatMessage("{b700d4}[MENU DOS CRIA]: {ffffff}You must not be driving!", 11993300)
+        sampAddChatMessage("{b700d4}[ARABE MENU]: {ffffff}You must not be driving!", 11993300)
     else
         local v993, v994, v995 = getCharCoordinates(PLAYER_PED)
         local _, v996 = sampGetCarHandleBySampVehicleId(p992)
@@ -10759,13 +10759,13 @@ function ExplodeVehicle(p992)
             setCarHealth(v996, 1)
             warpCharFromCarToCoord(PLAYER_PED, v993, v994, v995)
         else
-            sampAddChatMessage("{b700d4}[MENU DOS CRIA]: {ffffff}There is no car under this ID in the stream zone!", 11993300)
+            sampAddChatMessage("{b700d4}[ARABE MENU]: {ffffff}There is no car under this ID in the stream zone!", 11993300)
         end
     end
 end
 function GetVehicle(p997)
     if p997 == "" then
-        sampAddChatMessage("{b700d4}[MENU DOS CRIA]: {ffffff}You didn\'t enter a vehicle ID!", - 1)
+        sampAddChatMessage("{b700d4}[ARABE MENU]: {ffffff}You didn\'t enter a vehicle ID!", - 1)
     elseif tonumber(p997) then
         local v998, v999, v1000 = getCharCoordinates(PLAYER_PED)
         local _, v1001 = sampGetCarHandleBySampVehicleId(p997)
@@ -10773,10 +10773,10 @@ function GetVehicle(p997)
             warpCharIntoCar(PLAYER_PED, v1001)
             setCharCoordinates(PLAYER_PED, v998, v999, v1000)
         else
-            sampAddChatMessage("{b700d4}[MENU DOS CRIA]: {ffffff}There is no car under this ID in the stream zone!", - 1)
+            sampAddChatMessage("{b700d4}[ARABE MENU]: {ffffff}There is no car under this ID in the stream zone!", - 1)
         end
     else
-        sampAddChatMessage("{b700d4}[MENU DOS CRIA]: {ffffff}Incorrectly entered machine ID! (remove letters from ID)", - 1)
+        sampAddChatMessage("{b700d4}[ARABE MENU]: {ffffff}Incorrectly entered machine ID! (remove letters from ID)", - 1)
     end
 end
 local vu1002 = {}
@@ -10862,7 +10862,7 @@ function broadcaster_callback(p1019)
                 sampAddChatMessage("{9808cc}[SMS]: {ffffff}" .. u8:decode(p1019), - 1)
             end
             if script.receive_sound.v then
-                setAudioStreamState(loadAudioStream("moonloader/MENU DOS CRIA/sounds/bell.mp3"), 1)
+                setAudioStreamState(loadAudioStream("moonloader/ARABE MENU/sounds/bell.mp3"), 1)
             end
         end
         AddMessage(u8:decode(p1019))
@@ -10873,7 +10873,7 @@ function onScriptTerminate(p1020)
         if broadcaster and broadcaster.unregisterHandler then
             broadcaster.unregisterHandler(broadcaster_handle)
         end
-        sampAddChatMessage("{b700d4}[MENU DOS CRIA]:{B9C9BF} crashed", 16777215)
+        sampAddChatMessage("{b700d4}[ARABE MENU]:{B9C9BF} crashed", 16777215)
     end
 end
 function ShowWindowsMessage(p1021, p1022, p1023)
